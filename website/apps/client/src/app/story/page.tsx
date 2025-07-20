@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { GoogleGeminiEffect } from "@/components/ui/google-gemini-effect";
 import { useScroll, useTransform } from "motion/react";
 import {
   Navbar,
@@ -31,78 +30,205 @@ import {
   IconBrandYoutube
 } from "@tabler/icons-react";
 import { FloatingDock } from "@/components/ui/floating-dock";
+import { CodeBlock } from "@/components/ui/code-block";
+import { WobbleCard } from "@/components/ui/wobble-card";
+import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
+import { ThreeDMarquee } from "@/components/ui/3d-marquee";
 
-const Feature = ({
-  title,
-  description,
-  icon,
-  index,
-}: {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  index: number;
-}) => {
-  return (
-    <div
-      className={cn(
-        "flex flex-col lg:border-r  py-10 relative group/feature dark:border-neutral-800",
-        (index === 0 || index === 4) && "lg:border-l dark:border-neutral-800",
-        index < 4 && "lg:border-b dark:border-neutral-800"
-      )}
-    >
-      {index < 4 && (
-        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-t from-neutral-100 dark:from-neutral-800 to-transparent pointer-events-none" />
-      )}
-      {index >= 4 && (
-        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-b from-neutral-100 dark:from-neutral-800 to-transparent pointer-events-none" />
-      )}
-      <div className="mb-4 relative z-10 px-10 text-neutral-600 dark:text-neutral-400">
-        {icon}
-      </div>
-      <div className="text-lg font-bold mb-2 relative z-10 px-10">
-        <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-neutral-300 dark:bg-neutral-700 group-hover/feature:bg-blue-500 transition-all duration-200 origin-center" />
-        <span className="group-hover/feature:translate-x-2 transition duration-200 inline-block text-neutral-800 dark:text-neutral-100">
-          {title}
-        </span>
-      </div>
-      <p className="text-sm text-neutral-600 dark:text-neutral-300 max-w-xs relative z-10 px-10">
-        {description}
-      </p>
-    </div>
-  );
-};
+export function HyperKuvidDemo() {
+  const storyMarkdown = `# 🧪 HyperKuvid Labs Story
 
-export default function Home() {
-  const features = [
-    {
-      title: "Engineering Without Borders",
-      description:
-        "We bring together minds from CS, Mechanical, Electrical, Chemical, and more — all under one innovation-first banner.",
-      icon: <IconAtom />,
-    },
-    {
-      title: "Crafted by Builders, Not Bystanders",
-      description:
-        "Every featured project is battle-tested, peer-reviewed, and built by students who build for impact, not just checkboxes.",
-      icon: <IconAdjustmentsBolt />,
-    },
-    {
-      title: "Community-Curated Excellence",
-      description:
-        "Only the most promising, original, and impactful student projects make it here — this is not your average GitHub wall.",
-      icon: <IconStar />,
-    },
-    {
-      title: "Domain-Agnostic, Talent-Obsessed",
-      description:
-        "Whether it’s AI, robotics, circuits, materials, or anything in between — if it's brilliant, it belongs here.",
-      icon: <IconLayoutGrid />,
-    },
+## It All Started With Frugalsot
+We were just a bunch of curious students building a project named **Frugalsot**. Every time we wanted to collaborate, we'd share GitHub links or keep adding each other as collaborators manually. At some point, someone said: _"Why don't we just create an organization?"_ — and just like that, **HyperKuvid Labs** was born.
+
+## The Idea
+We started this as a shared space to build projects together. First came **Phydra**, then a couple more — and soon, it wasn't just about code anymore. It was about building something meaningful together. We realized we had more than just a group — we had momentum.
+
+## Growing Beyond Us
+As we moved into our final year of college, we decided to expand — not just across people, but across domains. We brought in students from **Mechanical**, **Electrical**, **Chemical**, and **Design** backgrounds. Because let's be honest: innovation doesn't wear a single department's hoodie.
+
+## What It Means for Students
+We're not a startup, we're not a formal club — we're a student-led collective where the best ideas rise to the top. If you've ever felt tired of tutorial clones or wanted to build something crazy with friends, **this is your space**.
+
+## From Student Projects to Talent Hub
+What started as a workaround for GitHub friction is now becoming a **curated platform** showcasing the best interdisciplinary projects — built by students, for students — and hopefully, seen by the world.
+
+> We're still learning, still building, and still asking: "What if we actually shipped this?"`
+
+  const visionMarkdown = `# 🎯 Our Vision — Why HyperKuvid Labs Exists
+
+## We've Been There.
+
+We're a bunch of students who tried it all — AI, Web3, robotics, even weird UI experiments.  
+Not everything stuck. We didn't master everything. And yeah, we lacked proper guidance.
+
+We dabbled in **multi-language backends**, **full-stack web dev**, **ML/DL with actual paper implementations**, **Web3 with real smart contracts**, and so many other rabbit holes — just chasing what excited us.
+
+But we don't call it wasted time — it was **experimentation**.  
+And in that chaos, we found clarity.
+
+A senior once told us:
+
+> _"You don't need guidance. You need visibility — the push that comes when you see your peers doing the impossible."_  
+
+That stuck with us.
+
+So we created **HyperKuvid Labs** — not just to build projects, but to build *momentum*.
+
+---
+
+## 🚀 What We Do Differently
+
+- Every project we release comes with:
+  - 📚 **Detailed technical documentation**
+  - 📖 **A story** — the "why" behind the build
+
+🤝 **Ping a Senior** — ask doubts and get lightning-fast help
+> (_How? Let's just say… our backend has a secret sauce. We're not revealing that here 😉_)
+
+We aren't just another GitHub org or college club.  
+We're a **launchpad** — especially for those who haven't had exposure or opportunities.
+
+---
+
+## 🔥 The HyperKuvid Method
+
+\`\`\`python
+def hyperkuvid_method():
+    idea = brainstorm_wildly()
+    prototype = build_fast(idea)
+    community = gather_minds()
+    return ship_fun(prototype, community)
+\`\`\`
+
+We don't wait for approvals. We don't obsess over perfection.  
+If it solves a problem, teaches something, or inspires anyone — we ship it.
+
+## 🌐 What "HyperKuvid" Means
+
+**Hyperlearning** + **Kuv-id** (குவி)  
+→ Tamil for "to gather or synthesize"  
+→ A fusion of intensity + curiosity + community
+
+We gather curious minds and build wildly ambitious things —  
+Not because we have to. But because it's fun, and someone out there needs that spark.
+
+## ✨ Who This is For
+
+- Students tired of boring coursework
+- Hackers stuck in tutorial hell  
+- Builders with unfinished dreams
+- Curious devs with crazy ideas
+
+If you've ever asked "What if we built this?" —  
+You belong here.
+`
+    const images = [
+    "/image1.png",
+    "/image2.png",
+    "/image3.png",
+    "/image4.png",
+    "/image5.png",
+    "/image6.png",
+    "/image7.png",
+    "/image8.png",
+    "/image9.png",
+    "/image10.png",
+    "/image11.png",
+    "/image12.png",
+    "/logo.jpg",
+    "/image13.png",
+    "/image2.png",
+    "/image3.png",
+    "/image4.png",
+    "/image5.png",
+    "/image6.png",
+    "/image7.png",
+    "/image8.png",
+    "/image9.png",
+    "/image10.png",
+    "/image11.png",
+    "/image12.png",
+    "/image13.png",
+    "/image3.png",
   ];
 
+  const people = [
+    {
+        id: 1,
+        name: "Pradheep P",
+        designation: "Builds. Breaks. Rebuilds.",
+        image:
+        "/pradheep_gh_logo.jpeg",
+    },
+    {
+        id: 2,
+        name: "KB Harish",
+        designation: "Slow fire. Sharp aim.",
+        image:
+        "/kb_gh_logo.png",
+    },
+    {
+        id: 3,
+        name: "Yuvanesh S",
+        designation: "Ghost mode. Godspeed.",
+        image:
+        "/yuvi_gh_logo.jpeg",
+    },
+    ];
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto w-full px-4 lg:px-0">
+      <WobbleCard containerClassName="bg-gradient-to-br from-purple-600 via-fuchsia-500 to-pink-500 min-h-[400px] overflow-hidden">
+        <div className="text-white p-4">
+          <CodeBlock code={storyMarkdown} language="markdown" filename="story.md" />
+        </div>
+      </WobbleCard>
+
+      <WobbleCard containerClassName="bg-gradient-to-br from-violet-600 via-purple-500 to-blue-500 min-h-[400px] overflow-hidden">
+        <div className="text-white p-4">
+          <CodeBlock code={visionMarkdown} language="markdown" filename="vision.md" />
+        </div>
+      </WobbleCard>
+
+      <WobbleCard containerClassName="col-span-1 lg:col-span-2 bg-transparent min-h-[500px] lg:min-h-[600px] xl:min-h-[400px] relative overflow-hidden">
+        {/* 3D Marquee as Background */}
+        <div className="absolute inset-0">
+          <ThreeDMarquee images={images} className="w-full h-full bg-gradient-to-br from-[#1A032B] via-[#4B0082] to-[#0D0118]" />
+        </div>
+        
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
+        
+        {/* Content Layer */}
+        <div className="relative z-10 flex flex-col items-center justify-center h-full p-6">
+          {/* Team Section */}
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-white mb-6">The Minds Behind HyperKuvid Labs</h3>
+            <div className="flex flex-row items-center justify-center">
+              <AnimatedTooltip items={people} />
+            </div>
+          </div>
+          
+          {/* Featured Projects Button */}
+          <div className="text-center">
+            <button className="group inline-flex items-center px-8 py-4 bg-white/90 hover:bg-white text-black font-bold text-lg rounded-lg transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-purple-500/25">
+              <IconLayoutGrid className="mr-3 h-6 w-6 group-hover:rotate-12 transition-transform duration-300" />
+              Featured Projects
+              <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
+            </button>
+            <p className="text-white/80 text-sm mt-3 max-w-md">
+              Explore our collection of student-built projects that solve real problems
+            </p>
+          </div>
+        </div>
+      </WobbleCard>
+    </div>
+  )
+}
+
+export default function Home() {
   //this is for floating dock component, do not remove wihtout asking me or informing me
-   const links = [
+  const links = [
     {
       title: "Home",
       icon: (
@@ -110,7 +236,6 @@ export default function Home() {
       ),
       href: "/",
     },
- 
     {
       title: "Projects",
       icon: (
@@ -137,7 +262,6 @@ export default function Home() {
       ),
       href: "/",
     },
-    
     {
       title: "X(Twitter)",
       icon: (
@@ -167,19 +291,9 @@ export default function Home() {
       href: "https://www.youtube.com/@HyperKuvid-Labs",
     },
   ];
+  
   const ref = React.useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
-
-  const pathLengthFirst = useTransform(scrollYProgress, [0, 0.8], [0.2, 1.2]);
-  const pathLengthSecond = useTransform(scrollYProgress, [0, 0.8], [0.15, 1.2]);
-  const pathLengthThird = useTransform(scrollYProgress, [0, 0.8], [0.1, 1.2]);
-  const pathLengthFourth = useTransform(scrollYProgress, [0, 0.8], [0.05, 1.2]);
-  const pathLengthFifth = useTransform(scrollYProgress, [0, 0.8], [0, 1.2]);
 
   const navItems = [
     {
@@ -188,7 +302,7 @@ export default function Home() {
     },
     {
       name: "Story",
-      link: "#story",
+      link: "/story",
     },
     {
       name: "Gallery",
@@ -199,7 +313,6 @@ export default function Home() {
   return (
     <div ref={ref}>
       <Navbar>
-        {/* Desktop Navigation */}
         <NavBody visible>
           <NavbarLogo />
           <NavItems items={navItems} />
@@ -209,7 +322,6 @@ export default function Home() {
           </div>
         </NavBody>
 
-        {/* Mobile Navigation */}
         <MobileNav>
           <MobileNavHeader>
             <NavbarLogo />
@@ -253,28 +365,14 @@ export default function Home() {
         </MobileNav>
       </Navbar>
 
-      <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen mt-55 p-8 pb-20 gap-16 sm:p-20">
-        <GoogleGeminiEffect
-          pathLengths={[
-            pathLengthFirst,
-            pathLengthSecond,
-            pathLengthThird,
-            pathLengthFourth,
-            pathLengthFifth,
-          ]}
-          className="w-full mt-10"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4  relative z-10 py-10 max-w-7xl mx-auto mt-55 gap-8">
-        {features.map((feature, index) => (
-          <Feature key={feature.title} {...feature} index={index} />
-        ))}
-      </div>
+      <main className="min-h-screen bg-black pt-20">
+        <div className="container mx-auto">
+          <HyperKuvidDemo />
+        </div>
+      </main>
 
       <footer className="w-full text-white px-6 pt-12 pb-6">
         <div className="max-w-7xl mx-auto flex flex-col items-center justify-center gap-6">
-          
           <div className="w-full flex items-center justify-center">
             <FloatingDock items={links} />
           </div>

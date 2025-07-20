@@ -233,7 +233,7 @@ export default function Home() {
     },
     {
       name: "Story",
-      link: "#story",
+      link: "/story",
     },
     {
       name: "Gallery",

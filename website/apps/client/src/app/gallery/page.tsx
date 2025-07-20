@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { GoogleGeminiEffect } from "@/components/ui/google-gemini-effect";
 import { useScroll, useTransform } from "motion/react";
 import {
   Navbar,
@@ -31,92 +30,6 @@ import {
   IconBrandYoutube
 } from "@tabler/icons-react";
 import { FloatingDock } from "@/components/ui/floating-dock";
-
-// Add the Cta11 component definition
-interface Cta11Props {
-  heading?: string;
-  description?: string;
-  imageSrc?: string;
-  imageAlt?: string;
-  buttonText?: string;
-  buttonHref?: string;
-}
-
-const Cta11 = ({
-  heading = "Fueling Student Innovation Across Disciplines",
-  description = "HyperKuvid Labs is a curated talent hub where the best student-built projects across CS, Mechanical, Electrical, and Chemical domains converge to push boundaries and redefine what's possible.",
-  imageSrc = "/logo.jpg", 
-  imageAlt = "HyperKuvid Labs Logo",
-}: Cta11Props) => {
-  return (
-    <section className="py-32">
-      <div className="container mx-auto flex flex-col items-center justify-center">
-        <div className="bg-[#1A032B] flex m-5 w-full flex-col gap-16 overflow-hidden rounded-2xl p-8 shadow-[0_0_25px_#6B21A8] md:p-10 lg:flex-row lg:items-center lg:p-12">
-          <div className="flex-1 text-white">
-            <h3 className="mb-3 text-3xl font-semibold md:mb-4 md:text-5xl lg:mb-6">
-              {heading}
-            </h3>
-            <p className="text-[#cfcfcf] max-w-xl lg:text-lg">
-              {description}
-            </p>
-            <button className="mt-6 rounded-xl bg-gradient-to-r from-purple-700 via-purple-800 to-purple-900 px-6 py-3 text-sm font-semibold text-white transition hover:scale-105 hover:from-purple-600 hover:to-purple-800">
-              Get Started
-            </button>
-          </div>
-
-          <div className="shrink-0">
-            <div className="flex flex-col justify-center gap-4 sm:flex-row sm:items-center">
-              <div className="relative h-32 w-32 overflow-hidden rounded-full border-2 border-purple-700 shadow-[0_0_20px_#6B21A8] sm:h-40 sm:w-40">
-                <img src={imageSrc} alt={imageAlt} className="object-cover w-full h-full" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const Feature = ({
-  title,
-  description,
-  icon,
-  index,
-}: {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  index: number;
-}) => {
-  return (
-    <div
-      className={cn(
-        "flex flex-col lg:border-r  py-10 relative group/feature dark:border-neutral-800",
-        (index === 0 || index === 4) && "lg:border-l dark:border-neutral-800",
-        index < 4 && "lg:border-b dark:border-neutral-800"
-      )}
-    >
-      {index < 4 && (
-        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-t from-neutral-100 dark:from-neutral-800 to-transparent pointer-events-none" />
-      )}
-      {index >= 4 && (
-        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-b from-neutral-100 dark:from-neutral-800 to-transparent pointer-events-none" />
-      )}
-      <div className="mb-4 relative z-10 px-10 text-neutral-600 dark:text-neutral-400">
-        {icon}
-      </div>
-      <div className="text-lg font-bold mb-2 relative z-10 px-10">
-        <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-neutral-300 dark:bg-neutral-700 group-hover/feature:bg-blue-500 transition-all duration-200 origin-center" />
-        <span className="group-hover/feature:translate-x-2 transition duration-200 inline-block text-neutral-800 dark:text-neutral-100">
-          {title}
-        </span>
-      </div>
-      <p className="text-sm text-neutral-600 dark:text-neutral-300 max-w-xs relative z-10 px-10">
-        {description}
-      </p>
-    </div>
-  );
-};
 
 export default function Home() {
   const features = [
@@ -170,7 +83,6 @@ export default function Home() {
       ),
       href: "#",
     },
-  
     {
       title: "X(Twitter)",
       icon: (
@@ -203,17 +115,6 @@ export default function Home() {
   const ref = React.useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
-
-  const pathLengthFirst = useTransform(scrollYProgress, [0, 0.8], [0.2, 1.2]);
-  const pathLengthSecond = useTransform(scrollYProgress, [0, 0.8], [0.15, 1.2]);
-  const pathLengthThird = useTransform(scrollYProgress, [0, 0.8], [0.1, 1.2]);
-  const pathLengthFourth = useTransform(scrollYProgress, [0, 0.8], [0.05, 1.2]);
-  const pathLengthFifth = useTransform(scrollYProgress, [0, 0.8], [0, 1.2]);
-
   const navItems = [
     {
       name: "Home",
@@ -225,7 +126,7 @@ export default function Home() {
     },
     {
       name: "Gallery",
-      link: "/gallerynow ",
+      link: "/gallery",
     },
   ];
 
@@ -285,32 +186,6 @@ export default function Home() {
           </MobileNavMenu>
         </MobileNav>
       </Navbar>
-
-      <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen mt-55 p-8 pb-20 gap-16 sm:p-20">
-        <GoogleGeminiEffect
-          pathLengths={[
-            pathLengthFirst,
-            pathLengthSecond,
-            pathLengthThird,
-            pathLengthFourth,
-            pathLengthFifth,
-          ]}
-          className="w-full mt-10"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4  relative z-10 py-10 max-w-7xl mx-auto mt-5 gap-8">
-        {features.map((feature, index) => (
-          <Feature key={feature.title} {...feature} index={index} />
-        ))}
-      </div>
-
-      <Cta11 
-        heading="Ready to Showcase Your Innovation?"
-        description="Join HyperKuvid Labs and share your groundbreaking projects with a community of passionate builders and innovators."
-        imageSrc="/logo.jpg"
-        imageAlt="Innovation showcase"
-      />
 
       <footer className="w-full text-white px-6 pt-12 pb-6">
         <div className="max-w-7xl mx-auto flex flex-col items-center justify-center gap-6">

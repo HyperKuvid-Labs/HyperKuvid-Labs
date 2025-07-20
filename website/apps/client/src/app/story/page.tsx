@@ -151,6 +151,8 @@ You belong here.
     "/image12.png",
     "/image13.png",
     "/image3.png",
+    "/image4.png",
+    "/image5.png",
   ];
 
   const people = [
@@ -178,30 +180,46 @@ You belong here.
     ];
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto w-full px-4 lg:px-0">
-      <WobbleCard containerClassName="bg-gradient-to-br from-purple-600 via-fuchsia-500 to-pink-500 min-h-[400px] overflow-hidden">
-        <div className="text-white p-4">
+      <WobbleCard containerClassName="bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 min-h-[400px] overflow-hidden border border-purple-800/20 relative">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
+          style={{
+            backgroundImage: 'url(/story.png)',
+          }}
+        />
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/40" />
+        {/* Content */}
+        <div className="relative z-10 text-white p-4">
           <CodeBlock code={storyMarkdown} language="markdown" filename="story.md" />
         </div>
       </WobbleCard>
 
-      <WobbleCard containerClassName="bg-gradient-to-br from-violet-600 via-purple-500 to-blue-500 min-h-[400px] overflow-hidden">
-        <div className="text-white p-4">
+      <WobbleCard containerClassName="bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900 min-h-[400px] overflow-hidden border border-blue-800/20 relative">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
+          style={{
+            backgroundImage: 'url(/vision.png)',
+          }}
+        />
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/40" />
+        {/* Content */}
+        <div className="relative z-10 text-white p-4">
           <CodeBlock code={visionMarkdown} language="markdown" filename="vision.md" />
         </div>
       </WobbleCard>
 
       <WobbleCard containerClassName="col-span-1 lg:col-span-2 bg-transparent min-h-[500px] lg:min-h-[600px] xl:min-h-[400px] relative overflow-hidden">
-        {/* 3D Marquee as Background */}
         <div className="absolute inset-0">
           <ThreeDMarquee images={images} className="w-full h-full bg-gradient-to-br from-[#1A032B] via-[#4B0082] to-[#0D0118]" />
         </div>
         
-        {/* Overlay for better text readability */}
         <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
         
-        {/* Content Layer */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full p-6">
-          {/* Team Section */}
           <div className="text-center mb-8">
             <h3 className="text-2xl font-bold text-white mb-6">The Minds Behind HyperKuvid Labs</h3>
             <div className="flex flex-row items-center justify-center">
@@ -209,7 +227,6 @@ You belong here.
             </div>
           </div>
           
-          {/* Featured Projects Button */}
           <div className="text-center">
             <button className="group inline-flex items-center px-8 py-4 bg-white/90 hover:bg-white text-black font-bold text-lg rounded-lg transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-purple-500/25">
               <IconLayoutGrid className="mr-3 h-6 w-6 group-hover:rotate-12 transition-transform duration-300" />
@@ -241,7 +258,7 @@ export default function Home() {
       icon: (
         <IconTerminal2 className="h-full w-full text-neutral-500 dark:text-neutral-300" />
       ),
-      href: "#",
+      href: "/gallery",
     },
     {
       title: "Ping Senior",
@@ -249,18 +266,6 @@ export default function Home() {
         <IconPlugConnected className="h-full w-full text-neutral-500 dark:text-neutral-300" />
       ),
       href: "#",
-    },
-    {
-      title: "HyperKuvid Labs",
-      icon: (
-        <img
-          src="/logo.jpg"
-          width={20}
-          height={20}
-          alt="HyperKuvid Labs Logo"
-        />
-      ),
-      href: "/",
     },
     {
       title: "X(Twitter)",
@@ -306,7 +311,7 @@ export default function Home() {
     },
     {
       name: "Gallery",
-      link: "#featured_projects",
+      link: "/gallery",
     },
   ];
 
@@ -350,6 +355,7 @@ export default function Home() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="primary"
                 className="w-full"
+                href="/login"
               >
                 Login
               </NavbarButton>
@@ -357,6 +363,7 @@ export default function Home() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="primary"
                 className="w-full"
+                href="#ask-senior"
               >
                 Ask Senior
               </NavbarButton>
@@ -382,7 +389,7 @@ export default function Home() {
           <div className="w-full flex flex-col md:flex-row justify-between items-center text-sm text-neutral-400">
             <p className="mb-2 md:mb-0">© 2025 HyperKuvid Labs. All rights reserved.</p>
             <div className="flex gap-4">
-              <a href="#" className="hover:text-purple-400 transition">Terms of Service</a>
+              <a href="/terms-of-service" className="hover:text-purple-400 transition">Terms of Service</a>
               <a href="#" className="hover:text-purple-400 transition">Privacy Policy</a>
             </div>
           </div>

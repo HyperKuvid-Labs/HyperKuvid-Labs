@@ -3,6 +3,42 @@ import { cn } from "@/lib/utils";
 import { motion, MotionValue } from "framer-motion"; 
 import React from "react";
 import { IconArrowsJoin } from '@tabler/icons-react';
+import { PointerHighlight } from "./pointer-highlight";
+import { HeroHighlight, Highlight } from "./hero-highlight";
+import { Orbitron } from "next/font/google";
+
+const vt323 = Orbitron({
+  subsets: ["latin"],
+  weight: '400',
+})
+
+export function HeroHighlightDemo() {
+  return (
+    <HeroHighlight>
+      <motion.h1
+        initial={{
+          opacity: 0,
+          y: 20,
+        }}
+        animate={{
+          opacity: 1,
+          y: [20, -5, 0],
+        }}
+        transition={{
+          duration: 0.5,
+          ease: [0.4, 0.0, 0.2, 1],
+        }}
+        className="text-2xl px-4 md:text-4xl lg:text-5xl font-bold text-neutral-700 dark:text-white max-w-4xl leading-relaxed lg:leading-snug text-center mx-auto md-3"
+      >
+        <p className="text-white">Welcome to</p> 
+        <Highlight className={`text-black font-bold`}>
+          HyperKuvid Labs
+        </Highlight>
+      </motion.h1>
+      <p className="mt-4 text-lg">Where theory crashes into practice — scroll through the chaos that builds tomorrow</p>
+    </HeroHighlight>
+  );
+}
 
 const transition = {
   duration: 0,
@@ -22,13 +58,14 @@ export const GoogleGeminiEffect = ({
 }) => {
   return (
     <div className={cn("sticky top-30", className)}>
-      <p className="text-lg md:text-7xl font-normal pb-4 text-center bg-clip-text text-transparent bg-gradient-to-b bg-gradient-to-b bg-gradient-to-b from-[#4B0082] to-[#9A4DFF]">
-        {title || `Welcome to HyperKuvid Labs`}
-      </p>
-      <p className="text-xs md:text-xl font-normal text-center text-neutral-400 mt-4 max-w-lg mx-auto">
+      {/* <p className="text-lg md:text-7xl font-normal pb-4 text-center bg-clip-text text-transparent bg-gradient-to-b bg-gradient-to-b bg-gradient-to-b from-[#4B0082] to-[#9A4DFF]">
+        {title || `Welcome to`}
+      </p> */}
+      <HeroHighlightDemo/>
+      {/* <p className="text-xs md:text-xl font-normal text-center text-neutral-400 mt-4 max-w-lg mx-auto">
         {description ||
           `Where theory crashes into practice — scroll through the chaos that builds tomorrow`}
-      </p>
+      </p> */}
       <svg
         width="1440"
         height="890"

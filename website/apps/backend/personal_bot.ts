@@ -2,11 +2,9 @@ import fs from "fs";
 import readline from "readline";
 import fetch from "node-fetch";
 
-// Model and personal data path
 const MODEL = "gemma3:4b";
 const PERSONAL_DATA_PATH = "./personal_data.txt";
 
-// Read personal data
 const personalData = fs.readFileSync(PERSONAL_DATA_PATH, "utf-8");
 
 // System instruction sent to Ollama

@@ -32,51 +32,6 @@ import {
 } from "@tabler/icons-react";
 import { FloatingDock } from "@/components/ui/floating-dock";
 
-// Add the Cta11 component definition
-interface Cta11Props {
-  heading?: string;
-  description?: string;
-  imageSrc?: string;
-  imageAlt?: string;
-  buttonText?: string;
-  buttonHref?: string;
-}
-
-const Cta11 = ({
-  heading = "Fueling Student Innovation Across Disciplines",
-  description = "HyperKuvid Labs is a curated talent hub where the best student-built projects across CS, Mechanical, Electrical, and Chemical domains converge to push boundaries and redefine what's possible.",
-  imageSrc = "/logo.jpg", 
-  imageAlt = "HyperKuvid Labs Logo",
-}: Cta11Props) => {
-  return (
-    <section className="py-32">
-      <div className="container mx-auto flex flex-col items-center justify-center">
-        <div className="bg-[#1A032B] flex m-5 w-full flex-col gap-16 overflow-hidden rounded-2xl p-8 shadow-[0_0_25px_#6B21A8] md:p-10 lg:flex-row lg:items-center lg:p-12">
-          <div className="flex-1 text-white">
-            <h3 className="mb-3 text-3xl font-semibold md:mb-4 md:text-5xl lg:mb-6">
-              {heading}
-            </h3>
-            <p className="text-[#cfcfcf] max-w-xl lg:text-lg">
-              {description}
-            </p>
-            <button className="mt-6 rounded-xl bg-gradient-to-r from-purple-700 via-purple-800 to-purple-900 px-6 py-3 text-sm font-semibold text-white transition hover:scale-105 hover:from-purple-600 hover:to-purple-800">
-              Get Started
-            </button>
-          </div>
-
-          <div className="shrink-0">
-            <div className="flex flex-col justify-center gap-4 sm:flex-row sm:items-center">
-              <div className="relative h-32 w-32 overflow-hidden rounded-full border-2 border-purple-700 shadow-[0_0_20px_#6B21A8] sm:h-40 sm:w-40">
-                <img src={imageSrc} alt={imageAlt} className="object-cover w-full h-full" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
 const Feature = ({
   title,
   description,
@@ -316,13 +271,6 @@ export default function Home() {
           <Feature key={feature.title} {...feature} index={index} />
         ))}
       </div>
-
-      <Cta11 
-        heading="Ready to Showcase Your Innovation?"
-        description="Join HyperKuvid Labs and share your groundbreaking projects with a community of passionate builders and innovators."
-        imageSrc="/logo.jpg"
-        imageAlt="Innovation showcase"
-      />
 
       <footer className="w-full text-white px-6 pt-12 pb-6">
         <div className="max-w-7xl mx-auto flex flex-col items-center justify-center gap-6">

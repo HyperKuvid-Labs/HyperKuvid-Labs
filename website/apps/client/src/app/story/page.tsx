@@ -390,7 +390,7 @@ export default function Home() {
             <p className="mb-2 md:mb-0">© 2025 HyperKuvid Labs. All rights reserved.</p>
             <div className="flex gap-4">
               <a href="/terms-of-service" className="hover:text-purple-400 transition">Terms of Service</a>
-              <a href="#" className="hover:text-purple-400 transition">Privacy Policy</a>
+              <a href="/privacy-policy" className="hover:text-purple-400 transition">Privacy Policy</a>
             </div>
           </div>
         </div>

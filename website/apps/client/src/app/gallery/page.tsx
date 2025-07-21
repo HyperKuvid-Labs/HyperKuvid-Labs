@@ -27,9 +27,181 @@ import {
   IconTerminal2,
   IconPlugConnected,
   IconBrandInstagram,
-  IconBrandYoutube
+  IconBrandYoutube,
+  IconBrandTabler,
+  IconUserBolt,
+  IconSettings,
+  IconArrowLeft,
+  IconTool,
+  IconBrandVscode,
+  IconTestPipe2Filled,
+  IconCircuitResistor
 } from "@tabler/icons-react";
 import { FloatingDock } from "@/components/ui/floating-dock";
+import {Sidebar, SidebarBody, SidebarLink} from "@/components/ui/sidebar";
+import { ProjectGrid } from "./project_grid";
+
+// Dashboard component to display the main content
+function Dashboard({ selectedCategory }: { selectedCategory: string }) {
+  return (
+    <div className="flex flex-1">
+      <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
+        <div className="flex gap-2">
+          {[...new Array(4)].map((_, i) => (
+            <div
+              key={"first-array" + i}
+              className="h-20 w-full rounded-lg bg-gray-100 dark:bg-neutral-800 animate-pulse"
+            ></div>
+          ))}
+        </div>
+        <div className="flex gap-2 flex-1">
+          {[...new Array(2)].map((_, i) => (
+            <div
+              key={"second-array" + i}
+              className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 animate-pulse"
+            ></div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main Dashboard component with ProjectGrid
+function MainDashboard({ selectedCategory }: { selectedCategory: string }) {
+  return (
+    <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="p-4 md:p-8 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-6 flex-1 w-full h-full overflow-y-auto">
+        {/* Header */}
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-neutral-800 dark:text-neutral-200">
+            {selectedCategory === "ALL" ? "All Projects" : 
+             selectedCategory === "CS" ? "Computer Science Projects" :
+             selectedCategory === "ELEC" ? "Electrical Projects" :
+             selectedCategory === "MECH" ? "Mechanical Projects" :
+             selectedCategory === "CHEM" ? "Chemical Projects" : "Projects"}
+          </h1>
+          <p className="text-neutral-600 dark:text-neutral-400">
+            Discover innovative student projects across engineering disciplines
+          </p>
+        </div>
+        
+        {/* Project Grid */}
+        <div className="flex-1">
+          <ProjectGrid selectedCategory={selectedCategory} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function SidebarDemo() {
+  const links = [
+    {
+      label: "All Projects",
+      href: "/gallery",
+      icon: (
+        <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+      ),
+    },
+    {
+      label: "Computer Science",
+      href: "/gallery/cs",
+      icon: (
+        <IconBrandVscode  className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+      ),
+    },
+    {
+      label: "Electrical",
+      href: "/gallery/elec",
+      icon: (
+        <IconCircuitResistor className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+      ),
+    },
+    {
+      label: "Mechanical",
+      href: "/gallery/mech",
+      icon: (
+        <IconTool className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+      ),
+    },
+    {
+      label: "Chemical",
+      href: "/gallery/chem",
+      icon: (
+        <IconTestPipe2Filled     className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+      ),
+    },
+  ];
+  
+  const [open, setOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
+
+  // Update links to handle category selection
+  const handleLinkClick = (label: string) => {
+    switch(label) {
+      case "All Projects":
+        setSelectedCategory("ALL");
+        break;
+      case "Computer Science":
+        setSelectedCategory("CS");
+        break;
+      case "Electrical":
+        setSelectedCategory("ELEC");
+        break;
+      case "Mechanical":
+        setSelectedCategory("MECH");
+        break;
+      case "Chemical":
+        setSelectedCategory("CHEM");
+        break;
+      default:
+        setSelectedCategory("ALL");
+    }
+  };
+
+  return (
+    <div
+      className={cn(
+        "mx-auto flex w-full max-w-7xl flex-1 flex-col overflow-hidden rounded-md border border-neutral-200 bg-gray-100 md:flex-row dark:border-neutral-700 dark:bg-neutral-800",
+        "h-screen", // for your use case, use `h-screen` instead of `h-[60vh]`
+      )}
+    >
+      <Sidebar open={open} setOpen={setOpen}>
+        <SidebarBody className="justify-between gap-10">
+          <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
+            {/* {open ? <Logo /> : <LogoIcon />} */}
+            <div className="mt-8 flex flex-col gap-2">
+              {links.map((link, idx) => (
+                <div key={idx} onClick={() => handleLinkClick(link.label)}>
+                  <SidebarLink link={{...link, href: "#"}} />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <SidebarLink
+              link={{
+                label: "Manu Arora",
+                href: "#",
+                icon: (
+                  <img
+                    src="https://assets.aceternity.com/manu.png"
+                    className="h-7 w-7 shrink-0 rounded-full"
+                    width={50}
+                    height={50}
+                    alt="Avatar"
+                  />
+                ),
+              }}
+            />
+          </div>
+        </SidebarBody>
+      </Sidebar>
+      <MainDashboard selectedCategory={selectedCategory} />
+    </div>
+  );
+}
 
 export default function Home() {
   const features = [
@@ -54,7 +226,7 @@ export default function Home() {
     {
       title: "Domain-Agnostic, Talent-Obsessed",
       description:
-        "Whether it’s AI, robotics, circuits, materials, or anything in between — if it's brilliant, it belongs here.",
+        "Whether it's AI, robotics, circuits, materials, or anything in between — if it's brilliant, it belongs here.",
       icon: <IconLayoutGrid />,
     },
   ];
@@ -186,6 +358,12 @@ export default function Home() {
           </MobileNavMenu>
         </MobileNav>
       </Navbar>
+
+      <main className="min-h-screen bg-black pt-20">
+        <div className="container mx-auto">
+            <SidebarDemo />
+        </div>
+    </main>
 
       <footer className="w-full text-white px-6 pt-12 pb-6">
         <div className="max-w-7xl mx-auto flex flex-col items-center justify-center gap-6">

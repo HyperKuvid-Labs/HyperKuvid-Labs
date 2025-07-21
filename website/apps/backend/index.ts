@@ -21,7 +21,7 @@ const trasnsporter = nodemailer.createTransport({
   port : 587,
   secure : false,
   auth : {
-    user : 'hyperkuvidlabs@gmail.com',
+    user : process.env.HKL_GMAIL,
     pass : 'need to get a pass for our email'
   }
 }) 

@@ -1,0 +1,80 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserLevel {
+  ADMIN
+  GENERAL
+  CORE_GENERAL
+}
+
+model User {
+  id              String          @id @default(uuid())
+  name            String
+  email           String          @unique
+  password        String
+  level           UserLevel       @default(GENERAL)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  lastSeen        DateTime
+
+  builderProfile  BuilderProfile?
+  projects        Project[]       @relation("UserProjects")  
+}
+
+model BuilderProfile {
+  id              String          @id @default(uuid())
+  userId          String          @unique
+  bio             String?
+  skills          String[]
+  linkedin        String?         @unique
+  x               String?         @unique
+  githubUsername  String?         @unique
+  hasPortfolio    Boolean         @default(false)
+  portfolioSite   String?
+  profileImage    String?
+
+  user            User            @relation(fields: [userId], references: [id])
+  builtProjects   BuilderProject[] 
+}Tmpe
+
+model 
+
+model Project {
+  id              String          @id @default(uuid())
+  title           String
+  description     String?
+  githubLink      String
+  story           String?
+  documentation   String?
+  techstack       String[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  ownerId         String
+  owner           User            @relation("UserProjects", fields: [ownerId], references: [id]) 
+
+  builders        BuilderProject[] 
+}
+
+
+//for just logging while the project is added to builder profile
+model BuilderProject {
+  id              String          @id @default(uuid())
+  builderId       String
+  projectId       String
+  githubLink      String
+  addedAt         DateTime        @default(now())
+
+  builder         BuilderProfile  @relation(fields: [builderId], references: [id]) 
+  project         Project         @relation(fields: [projectId], references: [id]) 
+
+  @@unique([builderId, projectId])
+}

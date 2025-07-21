@@ -1,9 +1,13 @@
+//@ts-nocheck
+
 import express from 'express';
 import { queryFromServer } from './personal_bot';
 import { v4 as uuidv4 } from 'uuid';
 import {PrismaClient} from '@prisma/client';
 import cors from 'cors';
 import nodemailer from 'nodemailer';
+import { stat } from 'fs';
+import { get } from 'http';
 
 const prisma = new PrismaClient();
 
@@ -58,12 +62,12 @@ app.post("/register/user", async(req, res) => {
 app.post("/project/add/:userId", async(req, res) => {
   const { userId } = req.params;
 
-if (req.body.githubLink) {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId
-    }
-  });
+  if (req.body.githubLink) {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId
+      }
+    });
   
   if (!user) {
     return res.status(400).send({
@@ -71,9 +75,58 @@ if (req.body.githubLink) {
     });
   }
 
+
+  await prisma.project.create({
+    data: {
+      title: req.body.title,
+      description: req.body.description,
+      githubLink:req.body.githubLink,
+      story: req.body.story,
+      documentation: req.body.documentation,
+      domain: req.body.domain,
+      techstack: req.body.techstack,
+      ownerId: userId,
+
+    }
+  })
+
+  
+
+  //here we are getting the project id that we just created above 
+  const getProjectId = await prisma.project.findFirst({
+    where: {
+      ownerId: userId,
+      title: req.body.title,  
+    },
+    select: {
+      id: true, 
+    },
+  });
+
+  if (!getProjectId) {
+    throw new Error("Builder profile not found for this user.");
+  }
+
+  const creators = req.body.creators;
+  for(const creatorid of creators){
+    await prisma.userProject.create({
+      data:{
+        userId:creatorid,
+        projectId:getProjectId.id
+      }
+    })
+  }
+
+
+
    const mailData = {
-    from: 'hyperkuvidlabs@gmail.com',
-    to: 'hyperkuvidlabs@gmail.com',
+    from: process.env.HKL_GMAIL,
+    to: process.env.HKL_GMAIL,
+    cc:[
+      process.env.ADMIN1_GMAIL,
+      process.env.ADMIN2_GMAIL,
+      process.env.ADMIN3_GMAIL
+    ],
     subject: '🔗 GitHub Project Submission - Auto Review',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
@@ -160,8 +213,13 @@ Submitted on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
   }
 
   const mailData = {
-    from: 'hyperkuvidlabs@gmail.com',
-    to: 'hyperkuvidlabs@gmail.com',
+    from: process.env.HKL_GMAIL,
+    to: process.env.HKL_GMAIL,
+    cc:[
+      process.env.ADMIN1_GMAIL,
+      process.env.ADMIN2_GMAIL,
+      process.env.ADMIN3_GMAIL
+    ],
     subject: '🚀 New Project Submission - Review Required',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
@@ -232,30 +290,30 @@ Submitted on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
       </div>
     `,
     text: `
-New Project Submission - Review Required
+    New Project Submission - Review Required
 
-SUBMITTER INFORMATION:
-Name: ${user.name}
-Email: ${user.email}
-User ID: ${userId}
+    SUBMITTER INFORMATION:
+    Name: ${user.name}
+    Email: ${user.email}
+    User ID: ${userId}
 
-PROJECT DETAILS:
-Title: ${title}
-Description: ${description}
-Story: ${story}
-Documentation Link: ${documentationLink || 'Not provided'}
-Tech Stack: ${techStack}
-Owner ID: ${ownerId}${ownerId !== userId ? ' (Different from submitter)' : ' (Same as submitter)'}
+    PROJECT DETAILS:
+    Title: ${title}
+    Description: ${description}
+    Story: ${story}
+    Documentation Link: ${documentationLink || 'Not provided'}
+    Tech Stack: ${techStack}
+    Owner ID: ${ownerId}${ownerId !== userId ? ' (Different from submitter)' : ' (Same as submitter)'}
 
-ACTION REQUIRED: This project submission requires manual review and approval.
+    ACTION REQUIRED: This project submission requires manual review and approval.
 
----
-This email was generated automatically by the HyperKuvid Labs project submission system.
-Submitted on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
-    `
-  };
-}
-});
+    ---
+    This email was generated automatically by the HyperKuvid Labs project submission system.
+    Submitted on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+        `
+    };
+    }
+  });
 
 
 app.post('/ask', async (req, res) => {
@@ -273,6 +331,161 @@ app.post('/ask', async (req, res) => {
     res.status(500).json({ error: 'Failed to get response from chatbot.' });
   }
 });
+
+
+
+app.post('/admin/approveProjects/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  const status=req.body.status;
+  const creators = req.body.creators;
+
+
+  if(status==="Waiting"){
+    res.status(200).send({
+      message: "Project is still waiting for approval."
+    })
+  }
+
+  let builderidarray=[];
+  
+  for(const creatorid of creators){
+    const isUserBuilder= await prisma.builderProfile.findUnique({
+      where:{
+        userId: creatorid
+      },
+      select: {
+        id: true,
+      },
+    })
+
+    if(isUserBuilder){
+      builderidarray.push(isUserBuilder)
+    }
+    if (!isUserBuilder) {
+      const {
+        userId,
+        bio,
+        skills,
+        linkedin,
+        x,
+        githubUsername,
+        hasPortfolio,
+        portfolioSite,
+        profileImage
+      } = req.body;
+    
+      const builderData: any = {
+        userId,
+        bio,
+        skills,
+        linkedin,
+        x,
+        githubUsername,
+        hasPortfolio,
+        profileImage
+      };
+    
+      if (hasPortfolio && portfolioSite) {
+        builderData.portfolioSite = portfolioSite;
+      }
+    
+      await prisma.builderProfile.create({
+        data: builderData
+      });
+
+      const getBuilderProfileId = await prisma.builderProfile.findUnique({
+        where: {
+          userId: creatorid,  
+        },
+        select: {
+          id: true, 
+        },
+      });
+      if (!getBuilderProfileId) {
+        throw new Error("Builder profile not found for this user.");
+      }
+      builderidarray.push(getBuilderProfileId);
+      
+    }
+    
+  }
+  
+
+    await prisma.builderProject.create({
+      data:{
+        buildersId:builderidarray,
+        projectId:projectId,
+        githubLink:req.body.githubLink,
+      }
+    })
+
+    res.status(200).send({
+      message: "Project approved and linked to existing builder profile."
+    });
+  }
+
+
+  // if (!isUserBuilder) {
+  //   const {
+  //     userId,
+  //     bio,
+  //     skills,
+  //     linkedin,
+  //     x,
+  //     githubUsername,
+  //     hasPortfolio,
+  //     portfolioSite,
+  //     profileImage
+  //   } = req.body;
+  
+  //   const builderData: any = {
+  //     userId,
+  //     bio,
+  //     skills,
+  //     linkedin,
+  //     x,
+  //     githubUsername,
+  //     hasPortfolio,
+  //     profileImage
+  //   };
+  
+  //   if (hasPortfolio && portfolioSite) {
+  //     builderData.portfolioSite = portfolioSite;
+  //   }
+  
+  //   await prisma.builderProfile.create({
+  //     data: builderData
+  //   });
+  
+  //   const getBuilderProfileId = await prisma.builderProfile.findUnique({
+  //     where: {
+  //       userId: req.body.userId,  
+  //     },
+  //     select: {
+  //       id: true, 
+  //     },
+  //   });
+  //   if (!getBuilderProfileId) {
+  //     throw new Error("Builder profile not found for this user.");
+  //   }
+  //   await prisma.builderProject.create({
+  //     data:{
+  //       builderId:getBuilderProfileId.id,
+  //       projectId:projectId,
+  //       githubLink:req.body.githubLink,
+  //     }
+  //   })
+
+
+  //   res.status(200).send({
+  //     message: "Project approved successfully and added to the newly created builder profile for this user."
+  //   });
+  //}
+//}
+);
+
+
+
 
 
 app.listen(PORT, () => {

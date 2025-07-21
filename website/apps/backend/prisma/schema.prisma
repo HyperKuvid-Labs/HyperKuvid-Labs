@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,17 +6,6 @@ datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-}
-
-enum UserLevel {
-  ADMIN
-  GENERAL
-  CORE_GENERAL
-}
-
-enum ProjectStatus {
-  Waiting
-  Aproved
 }
 
 model User {
@@ -29,56 +17,70 @@ model User {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   lastSeen        DateTime
-
   builderProfile  BuilderProfile?
-  projects        Project[]       @relation("UserProjects")  
+  projects        Project[]       @relation("UserProjects")
+  createdProjects UserProject[]
 }
 
 model BuilderProfile {
-  id              String          @id @default(uuid())
-  userId          String          @unique
-  bio             String?
-  skills          String[]
-  linkedin        String?         @unique
-  x               String?         @unique
-  githubUsername  String?         @unique
-  hasPortfolio    Boolean         @default(false)
-  portfolioSite   String?
-  profileImage    String?
-
-  user            User            @relation(fields: [userId], references: [id])
-  builtProjects   BuilderProject[] 
+  id             String           @id @default(uuid())
+  userId         String           @unique
+  bio            String?
+  skills         String[]
+  linkedin       String?          @unique
+  x              String?          @unique
+  githubUsername String?          @unique
+  hasPortfolio   Boolean          @default(false)
+  portfolioSite  String?
+  profileImage   String?
+  user           User             @relation(fields: [userId], references: [id])
+  builtProjects  BuilderProject[] @relation("BuilderProfileToBuilderProject")
 }
 
 model Project {
-  id              String          @id @default(uuid())
-  title           String
-  description     String?
-  githubLink      String
-  story           String?
-  documentation   String?
-  techstack       String[]
-  status          ProjectStatus   @default(Waiting)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-
-  ownerId         String
-  owner           User            @relation("UserProjects", fields: [ownerId], references: [id]) 
-
-  builders        BuilderProject[] 
+  id            String          @id @default(uuid())
+  title         String          @unique
+  description   String?
+  githubLink    String
+  story         String?
+  documentation String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  ownerId       String
+  status        ProjectStatus   @default(Waiting)
+  techstack     String[]
+  builders      BuilderProject?
+  owner         User            @relation("UserProjects", fields: [ownerId], references: [id])
+  creators      UserProject[]
 }
 
+model UserProject {
+  id        String   @id @default(uuid())
+  userId    String
+  projectId String
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
-//for just logging while the project is added to builder profile
+  @@unique([userId, projectId])
+}
+
 model BuilderProject {
-  id              String          @id @default(uuid())
-  builderId       String
-  projectId       String
-  githubLink      String
-  addedAt         DateTime        @default(now())
+  id         String           @id @default(uuid())
+  projectId  String           @unique
+  githubLink String
+  addedAt    DateTime         @default(now())
+  project    Project          @relation(fields: [projectId], references: [id])
+  builder    BuilderProfile[] @relation("BuilderProfileToBuilderProject")
+}
 
-  builder         BuilderProfile  @relation(fields: [builderId], references: [id]) 
-  project         Project         @relation(fields: [projectId], references: [id]) 
+enum UserLevel {
+  ADMIN
+  GENERAL
+  CORE_GENERAL
+}
 
-  @@unique([builderId, projectId])
+enum ProjectStatus {
+  Waiting
+  Aproved
 }

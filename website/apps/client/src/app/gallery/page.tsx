@@ -305,8 +305,8 @@ export default function Home() {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            <NavbarButton variant="secondary">Login</NavbarButton>
-            <NavbarButton variant="primary">Ask Senior</NavbarButton>
+            <NavbarButton variant="secondary" href="/login">Login</NavbarButton>
+            <NavbarButton variant="primary" href="/ask-senior">Ask Senior</NavbarButton>
           </div>
         </NavBody>
 
@@ -339,6 +339,7 @@ export default function Home() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="primary"
                 className="w-full"
+                href="/login"
               >
                 Login
               </NavbarButton>

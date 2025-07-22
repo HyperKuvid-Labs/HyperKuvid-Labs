@@ -35,12 +35,14 @@ import {
   IconTool,
   IconBrandVscode,
   IconTestPipe2Filled,
-  IconCircuitResistor
+  IconCircuitResistor,
+  IconGitBranch
 } from "@tabler/icons-react";
 import { FloatingDock } from "@/components/ui/floating-dock";
 import {Sidebar, SidebarBody, SidebarLink} from "@/components/ui/sidebar";
 import { ProjectGrid } from "./project_grid";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 
 // Main Dashboard component with ProjectGrid
@@ -50,24 +52,33 @@ function MainDashboard({ selectedCategory }: { selectedCategory: string }) {
       <div className="p-6 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-8 flex-1 w-full h-full overflow-y-auto">
         {/* Header */}
         <div className="flex flex-col gap-4">
-          <motion.h1
-              className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-400 to-violet-400 bg-clip-text text-transparent"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              Project Gallery
-            </motion.h1>
-          <h2 className="text-3xl md:text-4xl font-bold text-neutral-800 dark:text-neutral-200 mt-2">
-            {selectedCategory === "ALL" ? "All Projects" : 
-             selectedCategory === "CS" ? "Computer Science Projects" :
-             selectedCategory === "ELEC" ? "Electrical Projects" :
-             selectedCategory === "MECH" ? "Mechanical Projects" :
-             selectedCategory === "CHEM" ? "Chemical Projects" : "Projects"}
-          </h2>
-          <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl">
-            Discover innovative student projects across engineering disciplines. Each project represents cutting-edge work from talented builders pushing the boundaries of technology.
-          </p>
+          <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-4">
+              <motion.h1
+                  className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-400 to-violet-400 bg-clip-text text-transparent"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  Project Gallery
+                </motion.h1>
+              <h2 className="text-3xl md:text-4xl font-bold text-neutral-800 dark:text-neutral-200 mt-2">
+                {selectedCategory === "ALL" ? "All Projects" : 
+                 selectedCategory === "CS" ? "Computer Science Projects" :
+                 selectedCategory === "ELEC" ? "Electrical Projects" :
+                 selectedCategory === "MECH" ? "Mechanical Projects" :
+                 selectedCategory === "CHEM" ? "Chemical Projects" : "Projects"}
+              </h2>
+              <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl">
+                Discover innovative student projects across engineering disciplines. Each project represents cutting-edge work from talented builders pushing the boundaries of technology.
+              </p>
+            </div>
+            
+            <Button size="sm" className="bg-green-500 hover:bg-green-600 text-black border-green-500 hover:border-green-600" onClick={() => window.location.href = "/add-project"}>
+              <IconGitBranch className="h-4 w-4 mr-2" />
+              Add Your Project
+            </Button>
+          </div>
         </div>
         
         {/* Project Grid */}

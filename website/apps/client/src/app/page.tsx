@@ -31,6 +31,7 @@ import {
   IconBrandYoutube
 } from "@tabler/icons-react";
 import { FloatingDock } from "@/components/ui/floating-dock";
+import {ProjectApprovalFlow} from "@/app/project_approval";
 
 // Add the Cta11 component definition
 interface Cta11Props {
@@ -304,6 +305,19 @@ export default function Home() {
           <Feature key={feature.title} {...feature} index={index} />
         ))}
       </div>
+
+      <section className="py-16 max-w-7xl mx-auto px-4">
+        <h2 className="text-4xl font-bold text-white text-center mb-12">
+          Flowchart
+        </h2>
+        <div className="flex justify-center">
+          <img 
+            src="/flowchart.png" 
+            alt="HyperKuvid Labs Process Flowchart" 
+            className="w-full max-w-5xl h-auto rounded-lg"
+          />
+        </div>
+      </section>
 
       <Cta11 
         heading="Ready to Showcase Your Innovation?"

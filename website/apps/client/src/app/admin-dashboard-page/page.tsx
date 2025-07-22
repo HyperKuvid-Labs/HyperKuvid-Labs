@@ -20,6 +20,18 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 
 const projects = [
   {
@@ -103,14 +115,7 @@ const categories = [
 ];
 
 function AdminProjectList() {
-  const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [adminProjects, setAdminProjects] = useState(projects);
-  const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null);
-
-  const filteredProjects =
-    selectedCategory === "ALL"
-      ? adminProjects
-      : adminProjects.filter((p) => p.domain === selectedCategory);
 
   const handleApprove = (id: string) => {
     setAdminProjects((prev) =>
@@ -123,122 +128,98 @@ function AdminProjectList() {
     );
   };
 
-  const toggleExpand = (id: string) => {
-    setExpandedProjectId((prev) => (prev === id ? null : id));
+  const getFilteredProjects = (category: string) => {
+    return category === "ALL"
+      ? adminProjects
+      : adminProjects.filter((p) => p.domain === category);
   };
 
-  return (
-    <div className="p-6 max-w-3xl mx-auto mt-12 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl">
-      <div className="mb-8 flex flex-wrap items-center gap-4">
-        {categories.map((cat) => (
-          <Button
-            key={cat.key}
-            variant={selectedCategory === cat.key ? "default" : "outline"}
-            className={cn(
-              "flex items-center gap-1 px-4 py-2 rounded-full capitalize",
-              selectedCategory === cat.key
-                ? "bg-purple-600 text-white"
-                : "text-purple-700 border-purple-200 bg-purple-50 hover:bg-purple-100 dark:bg-neutral-900 dark:text-purple-300"
-            )}
-            onClick={() => setSelectedCategory(cat.key)}
-          >
-            {cat.icon} {cat.label}
-          </Button>
-        ))}
-      </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-separate border-spacing-y-2">
-          <thead>
-            <tr className="uppercase text-sm text-neutral-500">
-              <th align="left" className="px-3 py-2">
-                Project Name
-              </th>
-              <th align="left" className="px-3 py-2">
-                Status
-              </th>
-              <th align="center" className="px-3 py-2">
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProjects.length === 0 && (
-              <tr>
-                <td colSpan={3} className="px-3 py-4 text-center text-neutral-400">
-                  No projects in this category.
-                </td>
-              </tr>
-            )}
-            {filteredProjects.map((project) => {
-              const isExpanded = expandedProjectId === project.id;
-              return (
-                <React.Fragment key={project.id}>
-                  <tr
-                    className="group transition hover:bg-purple-50 dark:hover:bg-neutral-800 rounded-lg cursor-pointer"
-                    onClick={() => toggleExpand(project.id)}
-                    aria-expanded={isExpanded}
+  const renderProjectList = (filteredProjects: typeof projects) => (
+    <div className="space-y-4">
+      {filteredProjects.length === 0 && (
+        <div className="px-3 py-4 text-center text-neutral-400">
+          No projects in this category.
+        </div>
+      )}
+      
+      <Accordion type="single" collapsible className="w-full">
+        {filteredProjects.map((project) => (
+          <AccordionItem key={project.id} value={project.id}>
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex items-center justify-between w-full mr-4">
+                <div className="flex-1">
+                  <span className="font-medium text-neutral-900 dark:text-neutral-200">
+                    {project.title}
+                  </span>
+                </div>
+                <div className="flex-shrink-0 mx-4">
+                  <span
+                    className={cn(
+                      "inline-block px-3 py-1 rounded-full text-xs font-semibold border",
+                      project.status === "Aproved"
+                        ? "border-green-400 bg-green-100 text-green-700"
+                        : project.status === "Rejected"
+                        ? "border-red-400 bg-red-100 text-red-700"
+                        : "border-yellow-400 bg-yellow-100 text-yellow-800"
+                    )}
                   >
-                    <td className="px-3 py-3 font-medium text-neutral-900 dark:text-neutral-200">
-                      {project.title}
-                    </td>
-                    <td className="px-3 py-3">
-                      <span
-                        className={cn(
-                          "inline-block px-3 py-1 rounded-full text-xs font-semibold border",
-                          project.status === "Aproved"
-                            ? "border-green-400 bg-green-100 text-green-700"
-                            : project.status === "Rejected"
-                            ? "border-red-400 bg-red-100 text-red-700"
-                            : "border-yellow-400 bg-yellow-100 text-yellow-800"
-                        )}
-                      >
-                        {project.status}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3">
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="text-xs font-semibold text-neutral-400 whitespace-nowrap">
-                        </span>
-                        <div className="flex gap-2 mt-1">
-                          <Button
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700 text-white px-4"
-                            onClick={e => {
-                              e.stopPropagation();
-                              handleApprove(project.id);
-                            }}
-                          >
-                            Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="bg-red-600 hover:bg-red-700 text-white px-4"
-                            onClick={e => {
-                              e.stopPropagation();
-                              handleReject(project.id);
-                            }}
-                          >
-                            Reject
-                          </Button>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  {isExpanded && (
-                    <tr>
-                      <td colSpan={3} className="px-3 pb-4 pt-0 bg-neutral-100 dark:bg-neutral-800 border-t border-neutral-300 dark:border-neutral-700">
-                        <div className="pt-2 text-sm text-neutral-800 dark:text-neutral-300">
-                          {project.description}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                    {project.status}
+                  </span>
+                </div>
+                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700 text-white px-4"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleApprove(project.id);
+                    }}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-red-600 hover:bg-red-700 text-white px-4"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleReject(project.id);
+                    }}
+                  >
+                    Reject
+                  </Button>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="flex flex-col gap-4 text-balance">
+              <p className="text-sm text-neutral-800 dark:text-neutral-300">
+                {project.description}
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  );
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto mt-12 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl">
+      <Tabs defaultValue="ALL" className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          {categories.map((cat) => (
+            <TabsTrigger key={cat.key} value={cat.key} className="flex items-center gap-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-sm hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300 transition-colors">
+              {cat.icon}
+              <span className="hidden sm:inline">{cat.label}</span>
+              <span className="sm:hidden">{cat.key}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        
+        {categories.map((cat) => (
+          <TabsContent key={cat.key} value={cat.key} className="mt-6">
+            {renderProjectList(getFilteredProjects(cat.key))}
+          </TabsContent>
+        ))}
+      </Tabs>
     </div>
   );
 }

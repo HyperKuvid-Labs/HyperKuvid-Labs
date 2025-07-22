@@ -183,7 +183,7 @@ Submitted on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
     `
   };
   return res.status(201).send({
-    message: "Your project will be added after evaluation from the GitHub link you provided. Please wait for a while."
+    message: "Your project will be added after evaluation . Please wait for a while."
   });
 } else {
   const { title, description, story, documentationLink, techStack, ownerId } = req.body;

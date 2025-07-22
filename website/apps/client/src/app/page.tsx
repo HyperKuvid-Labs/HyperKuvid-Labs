@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { GoogleGeminiEffect } from "@/components/ui/google-gemini-effect";
 import { useScroll, useTransform } from "motion/react";
 import {
   Navbar,
@@ -13,7 +12,7 @@ import {
   MobileNavToggle,
   MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import {
   IconAdjustmentsBolt,
@@ -31,6 +30,73 @@ import {
   IconBrandYoutube
 } from "@tabler/icons-react";
 import { FloatingDock } from "@/components/ui/floating-dock";
+import { WavyBackground } from "@/components/ui/wavy-background";
+
+// Sparkles Component with hydration fix
+const Sparkles = () => {
+  const [sparkles, setSparkles] = useState<Array<{
+    id: number;
+    top: number;
+    left: number;
+    animationDelay: number;
+    size: number;
+  }>>([]);
+
+  useEffect(() => {
+    // Generate sparkles only on client side to avoid hydration mismatch
+    const generatedSparkles = Array.from({ length: 50 }, (_, i) => ({
+      id: i,
+      top: Math.random() * 100,
+      left: Math.random() * 100,
+      animationDelay: Math.random() * 3,
+      size: Math.random() * 4 + 2,
+    }));
+    setSparkles(generatedSparkles);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-30">
+      {sparkles.map((sparkle) => (
+        <div
+          key={sparkle.id}
+          className="absolute animate-pulse"
+          style={{
+            top: `${sparkle.top}%`,
+            left: `${sparkle.left}%`,
+            animationDelay: `${sparkle.animationDelay}s`,
+            width: `${sparkle.size}px`,
+            height: `${sparkle.size}px`,
+          }}
+        >
+          <div className="w-full h-full bg-purple-400 rounded-full opacity-60 animate-ping" />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Hero Section Component with WavyBackground
+const HeroSection = () => {
+  return (
+    <WavyBackground className="max-w-screen mx-auto pb-40 min-h-screen flex items-center justify-center">
+      <Sparkles />
+      
+      <div className="relative z-40 text-center px-4">
+        <h2 className="text-2xl md:text-3xl lg:text-4xl font-light text-white mb-4 tracking-wide">
+          Welcome to
+        </h2>
+        
+        <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold text-white mb-8 tracking-tight font-mono">
+          HyperKuvid-Labs
+        </h1>
+        
+        <p className="text-lg md:text-xl lg:text-2xl text-white max-w-4xl mx-auto leading-relaxed font-normal">
+          HyperKuvid Labs is a curated talent hub where the best student-built projects across CS, Mechanical, Electrical, and Chemical domains converge to push boundaries and redefine what's possible.
+        </p>
+      </div>
+    </WavyBackground>
+  );
+};
 
 // Add the Cta11 component definition
 interface Cta11Props {
@@ -49,7 +115,7 @@ const Cta11 = ({
   imageAlt = "HyperKuvid Labs Logo",
 }: Cta11Props) => {
   return (
-    <section className="py-32">
+    <section className="py-32 bg-black">
       <div className="container mx-auto flex flex-col items-center justify-center">
         <div className="bg-[#1A032B] flex m-5 w-full flex-col gap-16 overflow-hidden rounded-2xl p-8 shadow-[0_0_25px_#6B21A8] md:p-10 lg:flex-row lg:items-center lg:p-12">
           <div className="flex-1 text-white">
@@ -91,7 +157,7 @@ const Feature = ({
   return (
     <div
       className={cn(
-        "flex flex-col lg:border-r  py-10 relative group/feature dark:border-neutral-800",
+        "flex flex-col lg:border-r py-10 relative group/feature dark:border-neutral-800",
         (index === 0 || index === 4) && "lg:border-l dark:border-neutral-800",
         index < 4 && "lg:border-b dark:border-neutral-800"
       )}
@@ -141,7 +207,7 @@ export default function Home() {
     {
       title: "Domain-Agnostic, Talent-Obsessed",
       description:
-        "Whether it’s AI, robotics, circuits, materials, or anything in between — if it's brilliant, it belongs here.",
+        "Whether it's AI, robotics, circuits, materials, or anything in between — if it's brilliant, it belongs here.",
       icon: <IconLayoutGrid />,
     },
   ];
@@ -203,17 +269,6 @@ export default function Home() {
   const ref = React.useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
-
-  const pathLengthFirst = useTransform(scrollYProgress, [0, 0.8], [0.2, 1.2]);
-  const pathLengthSecond = useTransform(scrollYProgress, [0, 0.8], [0.15, 1.2]);
-  const pathLengthThird = useTransform(scrollYProgress, [0, 0.8], [0.1, 1.2]);
-  const pathLengthFourth = useTransform(scrollYProgress, [0, 0.8], [0.05, 1.2]);
-  const pathLengthFifth = useTransform(scrollYProgress, [0, 0.8], [0, 1.2]);
-
   const navItems = [
     {
       name: "Home",
@@ -225,20 +280,20 @@ export default function Home() {
     },
     {
       name: "Gallery",
-      link: "/gallerynow ",
+      link: "/gallery",
     },
   ];
 
   return (
-    <div ref={ref}>
+    <div ref={ref} className="max-h-screen max-w-screen">
       <Navbar>
         {/* Desktop Navigation */}
         <NavBody visible>
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            <NavbarButton variant="secondary">Login</NavbarButton>
-            <NavbarButton variant="primary">Ask Senior</NavbarButton>
+            <NavbarButton variant="secondary" href="/login">Login</NavbarButton>
+            <NavbarButton variant="primary" href="/ask-senior">Ask Senior</NavbarButton>
           </div>
         </NavBody>
 
@@ -271,6 +326,7 @@ export default function Home() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="primary"
                 className="w-full"
+                href="/login"
               >
                 Login
               </NavbarButton>
@@ -278,6 +334,7 @@ export default function Home() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="primary"
                 className="w-full"
+                href="/ask-senior"
               >
                 Ask Senior
               </NavbarButton>
@@ -286,24 +343,27 @@ export default function Home() {
         </MobileNav>
       </Navbar>
 
-      <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen mt-55 p-8 pb-20 gap-16 sm:p-20">
-        <GoogleGeminiEffect
-          pathLengths={[
-            pathLengthFirst,
-            pathLengthSecond,
-            pathLengthThird,
-            pathLengthFourth,
-            pathLengthFifth,
-          ]}
-          className="w-full mt-10"
-        />
-      </div>
+      {/* Hero Section with Sparkles and WavyBackground */}
+      <HeroSection />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4  relative z-10 py-10 max-w-7xl mx-auto mt-5 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 relative z-10 py-10 max-w-7xl mx-auto mt-5 gap-8 bg-black">
         {features.map((feature, index) => (
           <Feature key={feature.title} {...feature} index={index} />
         ))}
       </div>
+
+      <section className="py-16 max-w-7xl mx-auto px-4 bg-black">
+        <h2 className="text-4xl font-bold text-white text-center mb-12">
+          Flowchart
+        </h2>
+        <div className="flex justify-center">
+          <img 
+            src="/flowchart.png" 
+            alt="HyperKuvid Labs Process Flowchart" 
+            className="w-full max-w-5xl h-auto rounded-lg"
+          />
+        </div>
+      </section>
 
       <Cta11 
         heading="Ready to Showcase Your Innovation?"
@@ -312,7 +372,7 @@ export default function Home() {
         imageAlt="Innovation showcase"
       />
 
-      <footer className="w-full text-white px-6 pt-12 pb-6">
+      <footer className="w-full bg-black text-white px-6 pt-12 pb-6">
         <div className="max-w-7xl mx-auto flex flex-col items-center justify-center gap-6">
           
           <div className="w-full flex items-center justify-center">

@@ -35,59 +35,54 @@ import {
   IconTool,
   IconBrandVscode,
   IconTestPipe2Filled,
-  IconCircuitResistor
+  IconCircuitResistor,
+  IconGitBranch
 } from "@tabler/icons-react";
 import { FloatingDock } from "@/components/ui/floating-dock";
 import {Sidebar, SidebarBody, SidebarLink} from "@/components/ui/sidebar";
 import { ProjectGrid } from "./project_grid";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
-// Dashboard component to display the main content
-function Dashboard({ selectedCategory }: { selectedCategory: string }) {
-  return (
-    <div className="flex flex-1">
-      <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
-        <div className="flex gap-2">
-          {[...new Array(4)].map((_, i) => (
-            <div
-              key={"first-array" + i}
-              className="h-20 w-full rounded-lg bg-gray-100 dark:bg-neutral-800 animate-pulse"
-            ></div>
-          ))}
-        </div>
-        <div className="flex gap-2 flex-1">
-          {[...new Array(2)].map((_, i) => (
-            <div
-              key={"second-array" + i}
-              className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 animate-pulse"
-            ></div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // Main Dashboard component with ProjectGrid
 function MainDashboard({ selectedCategory }: { selectedCategory: string }) {
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      <div className="p-4 md:p-8 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-6 flex-1 w-full h-full overflow-y-auto">
+      <div className="p-6 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-8 flex-1 w-full h-full overflow-y-auto">
         {/* Header */}
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl md:text-3xl font-bold text-neutral-800 dark:text-neutral-200">
-            {selectedCategory === "ALL" ? "All Projects" : 
-             selectedCategory === "CS" ? "Computer Science Projects" :
-             selectedCategory === "ELEC" ? "Electrical Projects" :
-             selectedCategory === "MECH" ? "Mechanical Projects" :
-             selectedCategory === "CHEM" ? "Chemical Projects" : "Projects"}
-          </h1>
-          <p className="text-neutral-600 dark:text-neutral-400">
-            Discover innovative student projects across engineering disciplines
-          </p>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-4">
+              <motion.h1
+                  className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-400 to-violet-400 bg-clip-text text-transparent"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  Project Gallery
+                </motion.h1>
+              <h2 className="text-3xl md:text-4xl font-bold text-neutral-800 dark:text-neutral-200 mt-2">
+                {selectedCategory === "ALL" ? "All Projects" : 
+                 selectedCategory === "CS" ? "Computer Science Projects" :
+                 selectedCategory === "ELEC" ? "Electrical Projects" :
+                 selectedCategory === "MECH" ? "Mechanical Projects" :
+                 selectedCategory === "CHEM" ? "Chemical Projects" : "Projects"}
+              </h2>
+              <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl">
+                Discover innovative student projects across engineering disciplines. Each project represents cutting-edge work from talented builders pushing the boundaries of technology.
+              </p>
+            </div>
+            
+            <Button size="sm" className="bg-green-500 hover:bg-green-600 text-black border-green-500 hover:border-green-600" onClick={() => window.location.href = "/add-project"}>
+              <IconGitBranch className="h-4 w-4 mr-2" />
+              Add Your Project
+            </Button>
+          </div>
         </div>
         
         {/* Project Grid */}
-        <div className="flex-1">
+        <div className="flex-1 min-h-0">
           <ProjectGrid selectedCategory={selectedCategory} />
         </div>
       </div>
@@ -163,8 +158,8 @@ export function SidebarDemo() {
   return (
     <div
       className={cn(
-        "mx-auto flex w-full max-w-7xl flex-1 flex-col overflow-hidden rounded-md border border-neutral-200 bg-gray-100 md:flex-row dark:border-neutral-700 dark:bg-neutral-800",
-        "h-screen", // for your use case, use `h-screen` instead of `h-[60vh]`
+        "mx-auto flex w-full max-w-none flex-1 flex-col overflow-hidden border border-neutral-200 bg-gray-100 md:flex-row dark:border-neutral-700 dark:bg-neutral-800",
+        "min-h-[calc(100vh-5rem)]" // Increased height, accounting for navbar
       )}
     >
       <Sidebar open={open} setOpen={setOpen}>
@@ -174,7 +169,7 @@ export function SidebarDemo() {
             <div className="mt-8 flex flex-col gap-2">
               {links.map((link, idx) => (
                 <div key={idx} onClick={() => handleLinkClick(link.label)}>
-                  <SidebarLink link={{...link, href: "#"}} />
+                  <SidebarLink link={{ ...link, href: "#" }} />
                 </div>
               ))}
             </div>
@@ -182,11 +177,11 @@ export function SidebarDemo() {
           <div>
             <SidebarLink
               link={{
-                label: "Manu Arora",
-                href: "#",
+                label: "HyperKuvid Labs",
+                href: "/",
                 icon: (
                   <img
-                    src="https://assets.aceternity.com/manu.png"
+                    src="/logo.jpg"
                     className="h-7 w-7 shrink-0 rounded-full"
                     width={50}
                     height={50}
@@ -303,15 +298,15 @@ export default function Home() {
   ];
 
   return (
-    <div ref={ref}>
+    <div ref={ref} className="min-h-screen bg-black">
       <Navbar>
         {/* Desktop Navigation */}
         <NavBody visible>
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            <NavbarButton variant="secondary">Login</NavbarButton>
-            <NavbarButton variant="primary">Ask Senior</NavbarButton>
+            <NavbarButton variant="secondary" href="/login">Login</NavbarButton>
+            <NavbarButton variant="primary" href="/ask-senior">Ask Senior</NavbarButton>
           </div>
         </NavBody>
 
@@ -344,6 +339,7 @@ export default function Home() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="primary"
                 className="w-full"
+                href="/login"
               >
                 Login
               </NavbarButton>
@@ -359,13 +355,13 @@ export default function Home() {
         </MobileNav>
       </Navbar>
 
-      <main className="min-h-screen bg-black pt-20">
-        <div className="container mx-auto">
+      <main className="bg-black pt-20 pb-0">
+        <div className="w-full px-4 md:px-6 lg:px-8">
             <SidebarDemo />
         </div>
-    </main>
+      </main>
 
-      <footer className="w-full text-white px-6 pt-12 pb-6">
+      <footer className="w-full text-white px-6 pt-12 pb-6 bg-transparent">
         <div className="max-w-7xl mx-auto flex flex-col items-center justify-center gap-6">
           
           <div className="w-full flex items-center justify-center">

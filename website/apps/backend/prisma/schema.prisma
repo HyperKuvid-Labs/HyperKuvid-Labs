@@ -18,6 +18,7 @@ model User {
   updatedAt       DateTime        @updatedAt
   lastSeen        DateTime
   builderProfile  BuilderProfile?
+
   projects        Project[]       @relation("UserProjects")
   createdProjects UserProject[]
 }
@@ -62,8 +63,10 @@ model UserProject {
   project   Project  @relation(fields: [projectId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
 
+
   @@unique([userId, projectId])
 }
+
 
 model BuilderProject {
   id         String           @id @default(uuid())

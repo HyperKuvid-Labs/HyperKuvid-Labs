@@ -7,6 +7,16 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
+enum UserLevel {
+  ADMIN
+  GENERAL
+  CORE_GENERAL
+}
+
+enum ProjectStatus {
+  Waiting
+  Aproved
+}
 
 model User {
   id              String          @id @default(uuid())
@@ -77,13 +87,3 @@ model BuilderProject {
   builder    BuilderProfile[] @relation("BuilderProfileToBuilderProject")
 }
 
-enum UserLevel {
-  ADMIN
-  GENERAL
-  CORE_GENERAL
-}
-
-enum ProjectStatus {
-  Waiting
-  Aproved
-}

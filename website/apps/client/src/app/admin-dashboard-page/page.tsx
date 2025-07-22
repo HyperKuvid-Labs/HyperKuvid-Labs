@@ -21,21 +21,79 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// Example projects data (use your real data)
 const projects = [
-  { id: "1", title: "AI-Powered Code Assistant", domain: "CS", status: "Waiting" },
-  { id: "2", title: "Autonomous Drone Navigation", domain: "MECH", status: "Waiting" },
-  { id: "3", title: "Smart Grid Optimization", domain: "ELEC", status: "Waiting" },
-  { id: "4", title: "Green Hydrogen Production", domain: "CHEM", status: "Waiting" },
-  { id: "5", title: "Blockchain Security Platform", domain: "CS", status: "Waiting" },
-  { id: "6", title: "Robotic Assembly Line", domain: "MECH", status: "Waiting" },
-  { id: "7", title: "Neural Interface Device", domain: "ELEC", status: "Waiting" },
-  { id: "8", title: "Carbon Capture System", domain: "CHEM", status: "Waiting" },
-  { id: "9", title: "Quantum Computing Simulator", domain: "CS", status: "Waiting" },
-  { id: "10", title: "Smart Waste Management System", domain: "MECH", status: "Waiting" },
+  {
+    id: "1",
+    title: "AI-Powered Code Assistant",
+    domain: "CS",
+    status: "Waiting",
+    description: "An intelligent code completion and debugging tool that helps developers write code faster and with fewer errors.",
+  },
+  {
+    id: "2",
+    title: "Autonomous Drone Navigation",
+    domain: "MECH",
+    status: "Waiting",
+    description: "Advanced flight control system for drones with obstacle avoidance and autonomous path planning.",
+  },
+  {
+    id: "3",
+    title: "Smart Grid Optimization",
+    domain: "ELEC",
+    status: "Waiting",
+    description: "An IoT-based system for optimizing energy consumption in power grids using real-time data analytics.",
+  },
+  {
+    id: "4",
+    title: "Green Hydrogen Production",
+    domain: "CHEM",
+    status: "Waiting",
+    description: "Sustainable hydrogen production using renewable energy sources and electrolysis technology.",
+  },
+  {
+    id: "5",
+    title: "Blockchain Security Platform",
+    domain: "CS",
+    status: "Waiting",
+    description: "Decentralized security framework for securing digital assets with advanced cryptographic protocols.",
+  },
+  {
+    id: "6",
+    title: "Robotic Assembly Line",
+    domain: "MECH",
+    status: "Waiting",
+    description: "Automated manufacturing system utilizing precision robotics for efficient production processes.",
+  },
+  {
+    id: "7",
+    title: "Neural Interface Device",
+    domain: "ELEC",
+    status: "Waiting",
+    description: "Brain-computer interface technology to assist patients with motor disabilities.",
+  },
+  {
+    id: "8",
+    title: "Carbon Capture System",
+    domain: "CHEM",
+    status: "Waiting",
+    description: "Industrial-scale carbon dioxide capture and conversion system for climate change mitigation.",
+  },
+  {
+    id: "9",
+    title: "Quantum Computing Simulator",
+    domain: "CS",
+    status: "Waiting",
+    description: "Simulation platform aimed at accelerating research in quantum algorithms and computing.",
+  },
+  {
+    id: "10",
+    title: "Smart Waste Management System",
+    domain: "MECH",
+    status: "Waiting",
+    description: "IoT-enabled solution for efficient urban waste collection, sorting, and recycling.",
+  },
 ];
 
-// Category configs
 const categories = [
   { key: "ALL", label: "All", icon: <ChevronDown className="h-4 w-4" /> },
   { key: "CS", label: "Computer Science", icon: <Code className="h-4 w-4" /> },
@@ -44,24 +102,16 @@ const categories = [
   { key: "CHEM", label: "Chemical", icon: <FlaskConical className="h-4 w-4" /> },
 ];
 
-const statusColors = {
-  Waiting: "bg-yellow-100 text-yellow-800",
-  Aproved: "bg-green-100 text-green-800",
-  Rejected: "bg-red-100 text-red-800",
-};
-
-// Admin grid component
 function AdminProjectList() {
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [adminProjects, setAdminProjects] = useState(projects);
+  const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null);
 
-  // Filtering projects by selected category
   const filteredProjects =
     selectedCategory === "ALL"
       ? adminProjects
       : adminProjects.filter((p) => p.domain === selectedCategory);
 
-  // Approve/Reject handlers
   const handleApprove = (id: string) => {
     setAdminProjects((prev) =>
       prev.map((p) => (p.id === id ? { ...p, status: "Aproved" } : p))
@@ -71,6 +121,10 @@ function AdminProjectList() {
     setAdminProjects((prev) =>
       prev.map((p) => (p.id === id ? { ...p, status: "Rejected" } : p))
     );
+  };
+
+  const toggleExpand = (id: string) => {
+    setExpandedProjectId((prev) => (prev === id ? null : id));
   };
 
   return (
@@ -115,46 +169,73 @@ function AdminProjectList() {
                 </td>
               </tr>
             )}
-            {filteredProjects.map((project) => (
-              <tr
-                key={project.id}
-                className="group transition hover:bg-purple-50 dark:hover:bg-neutral-800 rounded-lg"
-              >
-                <td className="px-3 py-3 font-medium text-neutral-900 dark:text-neutral-200">
-                  {project.title}
-                </td>
-                <td className="px-3 py-3">
-                  <span
-                    className={cn(
-                      "inline-block px-3 py-1 rounded-full text-xs font-semibold border",
-                      project.status === "Aproved"
-                        ? "border-green-400 bg-green-100 text-green-700"
-                        : project.status === "Rejected"
-                        ? "border-red-400 bg-red-100 text-red-700"
-                        : "border-yellow-400 bg-yellow-100 text-yellow-800"
-                    )}
+            {filteredProjects.map((project) => {
+              const isExpanded = expandedProjectId === project.id;
+              return (
+                <React.Fragment key={project.id}>
+                  <tr
+                    className="group transition hover:bg-purple-50 dark:hover:bg-neutral-800 rounded-lg cursor-pointer"
+                    onClick={() => toggleExpand(project.id)}
+                    aria-expanded={isExpanded}
                   >
-                    {project.status}
-                  </span>
-                </td>
-                <td className="px-3 py-3 flex gap-3">
-                  <Button
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700 text-white px-4"
-                    onClick={() => handleApprove(project.id)}
-                  >
-                    Approve
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="bg-red-600 hover:bg-red-700 text-white px-4"
-                    onClick={() => handleReject(project.id)}
-                  >
-                    Reject
-                  </Button>
-                </td>
-              </tr>
-            ))}
+                    <td className="px-3 py-3 font-medium text-neutral-900 dark:text-neutral-200">
+                      {project.title}
+                    </td>
+                    <td className="px-3 py-3">
+                      <span
+                        className={cn(
+                          "inline-block px-3 py-1 rounded-full text-xs font-semibold border",
+                          project.status === "Aproved"
+                            ? "border-green-400 bg-green-100 text-green-700"
+                            : project.status === "Rejected"
+                            ? "border-red-400 bg-red-100 text-red-700"
+                            : "border-yellow-400 bg-yellow-100 text-yellow-800"
+                        )}
+                      >
+                        {project.status}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="text-xs font-semibold text-neutral-400 whitespace-nowrap">
+                        </span>
+                        <div className="flex gap-2 mt-1">
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white px-4"
+                            onClick={e => {
+                              e.stopPropagation();
+                              handleApprove(project.id);
+                            }}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="bg-red-600 hover:bg-red-700 text-white px-4"
+                            onClick={e => {
+                              e.stopPropagation();
+                              handleReject(project.id);
+                            }}
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  {isExpanded && (
+                    <tr>
+                      <td colSpan={3} className="px-3 pb-4 pt-0 bg-neutral-100 dark:bg-neutral-800 border-t border-neutral-300 dark:border-neutral-700">
+                        <div className="pt-2 text-sm text-neutral-800 dark:text-neutral-300">
+                          {project.description}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -162,7 +243,6 @@ function AdminProjectList() {
   );
 }
 
-// Navbar items
 const navItems = [
   { name: "Home", link: "/" },
   { name: "Story", link: "/story" },
@@ -175,17 +255,16 @@ export default function AdminDashboardPage() {
   const lastScrollY = useRef(0);
   const ref = React.useRef(null);
 
-  // Hide navbar on scroll down, show on scroll up
   useEffect(() => {
     const handleScroll = () => {
       if (typeof window === "undefined") return;
       const currentScrollY = window.scrollY;
       if (currentScrollY <= 8) {
-        setShowNavbar(true); // Show near top
+        setShowNavbar(true);
       } else if (currentScrollY > lastScrollY.current) {
-        setShowNavbar(false); // Hide on scroll down
+        setShowNavbar(false);
       } else {
-        setShowNavbar(true); // Show on scroll up
+        setShowNavbar(true);
       }
       lastScrollY.current = currentScrollY;
     };
@@ -195,14 +274,15 @@ export default function AdminDashboardPage() {
 
   return (
     <div ref={ref} className="min-h-screen bg-black w-full">
-      {/* Navbar Container with hide/show */}
+      {/* Navbar container with slide up/down */}
       <div
-        className={`fixed top-0 left-0 w-full z-40 transition-transform duration-300 bg-black bg-opacity-90 backdrop-blur-sm ${
-          showNavbar ? "translate-y-0" : "-translate-y-full"
-        }`}
+        className={`fixed top-0 left-0 right-0 w-full z-50 transition-transform duration-300 bg-black bg-opacity-90 backdrop-blur-sm`}
+        style={{
+          transform: showNavbar ? "translateY(0)" : "translateY(-120%)",
+          pointerEvents: showNavbar ? "auto" : "none",
+        }}
       >
         <Navbar>
-          {/* Desktop Navigation */}
           <NavBody visible>
             <NavbarLogo />
             <NavItems items={navItems} />
@@ -215,7 +295,6 @@ export default function AdminDashboardPage() {
               </NavbarButton>
             </div>
           </NavBody>
-          {/* Mobile Navigation */}
           <MobileNav>
             <MobileNavHeader>
               <NavbarLogo />
@@ -224,7 +303,6 @@ export default function AdminDashboardPage() {
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               />
             </MobileNavHeader>
-
             <MobileNavMenu
               isOpen={isMobileMenuOpen}
               onClose={() => setIsMobileMenuOpen(false)}
@@ -252,6 +330,7 @@ export default function AdminDashboardPage() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   variant="primary"
                   className="w-full"
+                  href="/ask-senior"
                 >
                   Ask Senior
                 </NavbarButton>
@@ -261,10 +340,9 @@ export default function AdminDashboardPage() {
         </Navbar>
       </div>
 
-      {/* Spacer div prevents content jump when navbar hides */}
-      <div className="h-[5rem] sm:h-[4.5rem]" />
+      {/* Spacer so content does not jump */}
+      <div className="h-16" />
 
-      {/* Admin Project List */}
       <main className="bg-black pt-4 pb-20 min-h-screen">
         <AdminProjectList />
       </main>

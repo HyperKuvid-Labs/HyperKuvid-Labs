@@ -23,7 +23,6 @@ export default function UserProfileFormPage() {
     { name: "Gallery", link: "/gallery" },
   ];
 
-  // Scroll logic for hiding the navbar
   useEffect(() => {
     const handleScroll = () => {
       const current = window.scrollY;
@@ -53,7 +52,6 @@ export default function UserProfileFormPage() {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Absolutely fixed, fully opaque, hides with -translate-y-full */}
       <div
         className={`fixed top-0 left-0 right-0 w-full z-50 transition-transform duration-300 bg-black`}
         style={{
@@ -118,15 +116,12 @@ export default function UserProfileFormPage() {
           </MobileNav>
         </Navbar>
       </div>
-      {/* Spacer for nav height */}
       <div className="h-16" />
-      {/* Centered form container */}
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4">
         <form className="w-full max-w-lg px-8 py-10 space-y-8 text-white">
           <h2 className="text-3xl font-bold mb-6 text-center text-purple-400">
             u.config.json
           </h2>
-          {/* Profile Image Upload */}
           <div className="flex flex-col items-center gap-2">
             <div className="relative h-28 w-28 mb-2">
               <div className="h-28 w-28 rounded-full border-2 border-purple-700 shadow-[0_0_16px_#A78BFA] overflow-hidden flex items-center justify-center bg-black">
@@ -156,7 +151,6 @@ export default function UserProfileFormPage() {
               onChange={handleFileChange}
             />
           </div>
-          {/* Form Fields */}
           <div className="space-y-4">
             <FormField label="Full Name" name="fullName" placeholder="The Name They Gave You" />
             <FormField label="NickName" name="NickName" placeholder="Underground Handle" />
@@ -172,7 +166,7 @@ export default function UserProfileFormPage() {
             type="submit"
             className="w-full mt-8 rounded-xl bg-gradient-to-r from-purple-700 via-purple-800 to-purple-900 px-6 py-3 text-base font-semibold text-white transition hover:scale-105 hover:from-purple-600 hover:to-purple-800"
           >
-            Save Profile
+            Commit Soul()
           </button>
         </form>
       </div>

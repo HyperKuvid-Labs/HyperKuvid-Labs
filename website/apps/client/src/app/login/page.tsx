@@ -11,14 +11,15 @@ export default function LoginPage() {
       <div className="w-full max-w-4xl">
         {/* Header with Logo */}
         <div className="flex items-center justify-center space-x-3 mb-8">
-          <img
-            src="/logo.jpg"
-            alt="HyperKuvid Labs"
-            className="w-10 h-10 rounded-lg object-cover"
-          />
+          <Link href="/">
+            <img
+              src="/logo.jpg"
+              alt="HyperKuvid Labs"
+              className="w-10 h-10 rounded-lg object-cover cursor-pointer"
+            />
+          </Link>
           <span className="text-2xl font-bold text-white">HyperKuvid Labs</span>
         </div>
-
         <div className="flex flex-col gap-6">
           <Card className="overflow-hidden p-0 bg-[#0F0F0F] border border-[#333333]">
             <CardContent className="p-0">

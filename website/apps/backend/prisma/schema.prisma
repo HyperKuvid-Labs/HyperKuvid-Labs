@@ -52,7 +52,7 @@ model Project {
   id            String          @id @default(uuid())
   title         String          @unique
   description   String?
-  githubLink    String
+  githubLink    String?
   story         String?
   documentation String?
   createdAt     DateTime        @default(now())

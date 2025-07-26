@@ -21,7 +21,7 @@ const trasnsporter = nodemailer.createTransport({
   secure : false,
   auth : {
     user : process.env.HKL_GMAIL,
-    pass : 'need to get a pass for our email'
+    pass : 'zpmq rbgs rbls gpwk'
   }
 }) 
 
@@ -790,6 +790,30 @@ app.get("/projects/:projectId", async(req, res) => {
   });
 });
 
+app.get("/user/:userId", (req, res) => {
+  const { userId } = req.params;
+
+  prisma.user.findUnique({
+    where: {
+      id: userId
+    }
+  }).then(user => {
+    if (!user) {
+      return res.status(404).send({
+        message: "User not found."
+      });
+    }
+
+    res.status(200).send({
+      user: user
+    });
+  }).catch(error => {
+    console.error('Error fetching user:', error);
+    res.status(500).send({
+      message: "Internal server error."
+    });
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

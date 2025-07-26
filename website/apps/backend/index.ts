@@ -1,5 +1,4 @@
 //@ts-nocheck
-
 import express from 'express';
 import { queryFromServer } from './personal_bot';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,7 +26,7 @@ const trasnsporter = nodemailer.createTransport({
 }) 
 
 app.get("/", (req, res) => {
-  res.send("Welcome to HYperKUvid-Labs' Kitechen").status(200);
+  res.send("Welcome to HyperKuvid-Lab's Kitchen").status(200);
 });
 
 app.get("/health", (req, res) => {
@@ -90,8 +89,6 @@ app.post("/project/add/:userId", async(req, res) => {
     }
   })
 
-  
-
   //here we are getting the project id that we just created above 
   const getProjectId = await prisma.project.findFirst({
     where: {
@@ -116,8 +113,6 @@ app.post("/project/add/:userId", async(req, res) => {
       }
     })
   }
-
-
 
    const mailData = {
     from: process.env.HKL_GMAIL,
@@ -310,12 +305,22 @@ Submitted on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
     ---
     This email was generated automatically by the HyperKuvid Labs project submission system.
     Submitted on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
-        `
-    };
+          `
+      };
+  
+      try {
+        await trasnsporter.sendMail(mailData);
+      } catch (error) {
+        console.error('Error sending email:', error);
+      }
+  
+      return res.status(201).send({
+        message: "Your project will be added after evaluation. Please wait for a while."
+      });
     }
   });
 
-
+//the ask senior route
 app.post('/ask', async (req, res) => {
   const { message } = req.body;
 
@@ -324,7 +329,7 @@ app.post('/ask', async (req, res) => {
   }
 
   try {
-    const answer = await queryFromServer(message);
+    const answer = await queryFromServer(message.senior, message.prompt);
     res.json({ response: answer });
   } catch (error) {
     console.error('Error in /ask route:', error);
@@ -332,162 +337,460 @@ app.post('/ask', async (req, res) => {
   }
 });
 
-
-
+//admin approving the project
 app.post('/admin/approveProjects/:projectId', async (req, res) => {
   const { projectId } = req.params;
-  const status=req.body.status;
-  const creators = req.body.creators;
+  //so here the req.bidy will come as
+  // {
+  //   creators: [mails of builders/users]
+  // }
+  // const status=req.body.status;
+  const creators = req.body.creators; // array of mails from the frontend
 
-
-  if(status==="Waiting"){
-    res.status(200).send({
-      message: "Project is still waiting for approval."
-    })
-  }
+  //here the projects we are getting for sure waiting, so why are we gonna keep this
+  // if(status==="Waiting"){
+  //   res.status(200).send({
+  //     message: "Project is still waiting for approval."
+  //   })
+  // }
 
   let builderidarray=[];
+  let nonBuilderCreators = [];
+  let builderMails = [];
   
-  for(const creatorid of creators){
-    const isUserBuilder= await prisma.builderProfile.findUnique({
+  for(const creatorMail of creators){
+    //here gonna check with mail
+    const isUserBuilder = await prisma.builderProfile.findUnique({
       where:{
-        userId: creatorid
-      },
-      select: {
-        id: true,
-      },
+        mail : creatorMail
+      }
     })
 
     if(isUserBuilder){
       builderidarray.push(isUserBuilder)
+      builderMails.push(creatorMail);
     }
     if (!isUserBuilder) {
-      const {
-        userId,
-        bio,
-        skills,
-        linkedin,
-        x,
-        githubUsername,
-        hasPortfolio,
-        portfolioSite,
-        profileImage
-      } = req.body;
-    
-      const builderData: any = {
-        userId,
-        bio,
-        skills,
-        linkedin,
-        x,
-        githubUsername,
-        hasPortfolio,
-        profileImage
-      };
-    
-      if (hasPortfolio && portfolioSite) {
-        builderData.portfolioSite = portfolioSite;
+      const user = await prisma.user.findUnique({
+        where:{
+          email : creatorMail
+        }
+      });
+
+      if(!user){
+        return res.status(400).send({
+          message: "User not found."
+        });
+      }
+      
+      const builderData = {
+        userId : user.id,
+        mail : creatorMail,
       }
     
       await prisma.builderProfile.create({
         data: builderData
       });
 
-      const getBuilderProfileId = await prisma.builderProfile.findUnique({
+      const getBuilderProfile = await prisma.builderProfile.findUnique({
         where: {
-          userId: creatorid,  
-        },
-        select: {
-          id: true, 
-        },
+          mail: creatorMail,  
+        }
       });
-      if (!getBuilderProfileId) {
+      if (!getBuilderProfile) {
         throw new Error("Builder profile not found for this user.");
       }
-      builderidarray.push(getBuilderProfileId);
-      
+      nonBuilderCreators.push(creatorMail);
     }
-    
   }
+
+  await prisma.project.update({
+    where:{
+      id : projectId
+    },
+    data:{
+      status: "Approved"
+    }
+  });
+
+  await prisma.builderProject.create({
+    data:{
+      builder: builderidarray,
+      projectId:projectId,
+    }
+  });
+
+  const project = await prisma.project.findUnique({
+    where: {
+      id: projectId
+    }
+  });
+
+  //sending the email to the user/builder profile
   
+  // emailfor existing builders
+  if (builderMails.length > 0) {
+    const builderMailData = {
+      from: process.env.HKL_GMAIL,
+      to: builderMails,
+      subject: '🎉 Your Project Has Been Approved!',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h2 style="color: #28a745; border-bottom: 2px solid #28a745; padding-bottom: 10px; margin-bottom: 20px;">
+              🎉 Project Approved Successfully!
+            </h2>
+            
+            <div style="background-color: #d4edda; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+              <p style="margin: 0; color: #155724;">
+                <strong>Congratulations!</strong> Your project has been approved and is now live on HyperKuvid Labs.
+              </p>
+            </div>
+            
+            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+              <h3 style="color: #495057; margin-top: 0;">📋 Project Details</h3>
+              <p style="margin: 5px 0;"><strong>Title:</strong> ${project?.title || 'N/A'}</p>
+              <p style="margin: 5px 0;"><strong>Description:</strong> ${project?.description || 'N/A'}</p>
+              <p style="margin: 5px 0;"><strong>Domain:</strong> ${project?.domain || 'N/A'}</p>
+              <p style="margin: 5px 0;"><strong>Tech Stack:</strong> ${project?.techstack || 'N/A'}</p>
+              ${project?.githubLink ? `<p style="margin: 5px 0;"><strong>GitHub:</strong> <a href="${project.githubLink}" style="color: #007bff;">${project.githubLink}</a></p>` : ''}
+              ${project?.documentation ? `<p style="margin: 5px 0;"><strong>Documentation:</strong> <a href="${project.documentation}" style="color: #007bff;">${project.documentation}</a></p>` : ''}
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #dee2e6; margin: 20px 0;">
+            
+            <p style="color: #6c757d; font-size: 12px; margin: 0; text-align: center;">
+              This email was sent by HyperKuvid Labs.<br>
+              Approved on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+            </p>
+          </div>
+        </div>
+      `,
+      text: `
+Project Approved Successfully!
 
-    await prisma.builderProject.create({
-      data:{
-        buildersId:builderidarray,
-        projectId:projectId,
-        githubLink:req.body.githubLink,
+Congratulations! Your project has been approved and is now live on HyperKuvid Labs.
+
+PROJECT DETAILS:
+Title: ${project?.title || 'N/A'}
+Description: ${project?.description || 'N/A'}
+Domain: ${project?.domain || 'N/A'}
+Tech Stack: ${project?.techstack || 'N/A'}
+${project?.githubLink ? `GitHub: ${project.githubLink}` : ''}
+${project?.documentation ? `Documentation: ${project.documentation}` : ''}
+
+---
+This email was sent by HyperKuvid Labs.
+Approved on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+      `
+    };
+
+    try {
+      await trasnsporter.sendMail(builderMailData);
+    } catch (error) {
+      console.error('Error sending email to builders:', error);
+    }
+  }
+
+  // email for new builders (non-builder creators)
+  if (nonBuilderCreators.length > 0) {
+    for (const creatorMail of nonBuilderCreators) {
+      const user = await prisma.user.findUnique({
+        where: { email: creatorMail }
+      });
+
+      const newBuilderMailData = {
+        from: process.env.HKL_GMAIL,
+        to: creatorMail,
+        subject: '🎉 Your Project Has Been Approved!',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+            <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+              <h2 style="color: #28a745; border-bottom: 2px solid #28a745; padding-bottom: 10px; margin-bottom: 20px;">
+                🎉 Project Approved Successfully!
+              </h2>
+              
+              <div style="background-color: #d4edda; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+                <p style="margin: 0; color: #155724;">
+                  <strong>Congratulations!</strong> Your project has been approved and is now live on HyperKuvid Labs.
+                </p>
+              </div>
+              
+              <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                <h3 style="color: #495057; margin-top: 0;">📋 Project Details</h3>
+                <p style="margin: 5px 0;"><strong>Title:</strong> ${project?.title || 'N/A'}</p>
+                <p style="margin: 5px 0;"><strong>Description:</strong> ${project?.description || 'N/A'}</p>
+                <p style="margin: 5px 0;"><strong>Domain:</strong> ${project?.domain || 'N/A'}</p>
+                <p style="margin: 5px 0;"><strong>Tech Stack:</strong> ${project?.techstack || 'N/A'}</p>
+                ${project?.githubLink ? `<p style="margin: 5px 0;"><strong>GitHub:</strong> <a href="${project.githubLink}" style="color: #007bff;">${project.githubLink}</a></p>` : ''}
+                ${project?.documentation ? `<p style="margin: 5px 0;"><strong>Documentation:</strong> <a href="${project.documentation}" style="color: #007bff;">${project.documentation}</a></p>` : ''}
+              </div>
+              
+              <div style="background-color: #e8f5e8; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+                <p style="margin: 0; color: #155724;">
+                  <strong>🎊 Congratulations on becoming a builder by adding your project!</strong><br>
+                  Now you can update your profile at <a href="https://hyperkuvidlabs.tech/people/${user?.id}" style="color: #007bff; text-decoration: none;">hyperkuvidlabs.tech/people/${user?.id}</a>
+                </p>
+              </div>
+              
+              <hr style="border: none; border-top: 1px solid #dee2e6; margin: 20px 0;">
+              
+              <p style="color: #6c757d; font-size: 12px; margin: 0; text-align: center;">
+                This email was sent by HyperKuvid Labs.<br>
+                Approved on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+              </p>
+            </div>
+          </div>
+        `,
+        text: `
+Project Approved Successfully!
+
+Congratulations! Your project has been approved and is now live on HyperKuvid Labs.
+
+PROJECT DETAILS:
+Title: ${project?.title || 'N/A'}
+Description: ${project?.description || 'N/A'}
+Domain: ${project?.domain || 'N/A'}
+Tech Stack: ${project?.techstack || 'N/A'}
+${project?.githubLink ? `GitHub: ${project.githubLink}` : ''}
+${project?.documentation ? `Documentation: ${project.documentation}` : ''}
+
+🎊 Congratulations on becoming a builder by adding your project!
+Now you can update your profile at https://hyperkuvidlabs.tech/people/${user?.id}
+
+---
+This email was sent by HyperKuvid Labs.
+Approved on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+        `
+      };
+
+      try {
+        await trasnsporter.sendMail(newBuilderMailData);
+      } catch (error) {
+        console.error(`Error sending email to new builder ${creatorMail}:`, error);
       }
-    })
+    }
+  }
 
-    res.status(200).send({
-      message: "Project approved and linked to existing builder profile."
+  res.status(200).send({
+    message: "Project approved and linked to existing builder profile."
+  });
+});
+
+app.post("/admin/rejectProjects/:projectId", async (req, res) => {
+  const { projectId } = req.params;
+  const creators = req.body.creators; 
+  const message = req.body.message;
+
+  await prisma.project.update({
+    where: {
+      id: projectId
+    },
+    data: {
+      status: "Rejected"
+    }
+  });
+
+  const project = await prisma.project.findUnique({
+    where: {
+      id: projectId
+    }
+  });
+
+  await prisma.project.delete({
+    where: {
+      id: projectId
+    }
+  });
+
+  for(const creatorMail of creators){
+    const user = await prisma.user.findUnique({
+      where: {
+        email: creatorMail
+      }
+    });
+
+    if (!user) {
+      return res.status(400).send({
+        message: `User with email ${creatorMail} not found.`
+      });
+    }
+
+    const mailData = {
+      from: process.env.HKL_GMAIL,
+      to: creatorMail,
+      subject: '❌ Your Project Has Been Rejected',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h2 style="color: #dc3545; border-bottom: 2px solid #dc3545; padding-bottom: 10px; margin-bottom: 20px;">
+              ❌ Project Rejected
+            </h2>
+            
+            <div style="background-color: #f8d7da; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+              <p style="margin: 0; color: #721c24;">
+                <strong>Unfortunately, your project has been rejected.</strong> Please review the feedback below and consider resubmitting.
+              </p>
+            </div>
+            
+            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+              <h3 style="color: #495057; margin-top: 0;">📋 Project Details</h3>
+              <p style="margin: 5px 0;"><strong>Title:</strong> ${project?.title || 'N/A'}</p>
+              <p style="margin: 5px 0;"><strong>Description:</strong> ${project?.description || 'N/A'}</p>
+              <p style="margin: 5px 0;"><strong>Domain:</strong> ${project?.domain || 'N/A'}</p>
+              <p style="margin: 5px 0;"><strong>Tech Stack:</strong> ${project?.techstack || 'N/A'}</p>
+              ${project?.githubLink ? `<p style="margin: 5px 0;"><strong>GitHub:</strong> <a
+                href="${project.githubLink}" target="_blank">${project.githubLink}</a></p>` : ''}
+              ${project?.documentation ? `<p style="margin: 5px 0;"><strong>Documentation:</strong> <a
+                href="${project.documentation}" target="_blank">${project.documentation}</a></p>` : ''}
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #dee2e6; margin: 20px 0;">
+
+            <div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107;">
+              <p style="margin: 0; color: #856404;">
+                <strong>Feedback:</strong> ${message || 'No specific feedback provided.'}
+              </p>
+            </div>
+            
+            <p style="color: #6c757d; font-size: 12px; margin: 0; text-align: center;">
+              This email was sent by HyperKuvid Labs.<br>
+              Approved on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+            </p>
+          </div>
+        </div>
+      `
+    };
+
+    try {
+      await transporter.sendMail(mailData);
+      console.log('Email sent successfully');
+    } catch (error) {
+      console.error('Error sending email:', error);
+    }
+  }
+
+  res.status(200).send({
+    message: "Project rejected and email sent to creators."
+  });
+});
+
+app.post("/user/addProject", async(req, res) => {
+  //req.body template
+  // {
+  //   ownerId : Mail,
+  //   title, description, githubLink, story, documentation, cretors: mails of other contributors, owner user
+  // }
+
+  const { ownerId, title, description, githubLink, story, documentation, creators } = req.body;
+
+  if(!githubLink && (!story || !documentation)) {
+    return res.status(400).send({
+      message: "Either gitub linkt or story and documentation should be provided."
     });
   }
 
+  await prisma.project.create({
+    data: {
+      title: title,
+      description: description,
+      githubLink: githubLink,
+      story: story,
+      documentation: documentation,
+      domain: req.body.domain,
+      techstack: req.body.techStack,
+      ownerId: ownerId,
+      contributors: {
+        connect: creators
+      }
+    }
+  });
 
-  // if (!isUserBuilder) {
-  //   const {
-  //     userId,
-  //     bio,
-  //     skills,
-  //     linkedin,
-  //     x,
-  //     githubUsername,
-  //     hasPortfolio,
-  //     portfolioSite,
-  //     profileImage
-  //   } = req.body;
-  
-  //   const builderData: any = {
-  //     userId,
-  //     bio,
-  //     skills,
-  //     linkedin,
-  //     x,
-  //     githubUsername,
-  //     hasPortfolio,
-  //     profileImage
-  //   };
-  
-  //   if (hasPortfolio && portfolioSite) {
-  //     builderData.portfolioSite = portfolioSite;
-  //   }
-  
-  //   await prisma.builderProfile.create({
-  //     data: builderData
-  //   });
-  
-  //   const getBuilderProfileId = await prisma.builderProfile.findUnique({
-  //     where: {
-  //       userId: req.body.userId,  
-  //     },
-  //     select: {
-  //       id: true, 
-  //     },
-  //   });
-  //   if (!getBuilderProfileId) {
-  //     throw new Error("Builder profile not found for this user.");
-  //   }
-  //   await prisma.builderProject.create({
-  //     data:{
-  //       builderId:getBuilderProfileId.id,
-  //       projectId:projectId,
-  //       githubLink:req.body.githubLink,
-  //     }
-  //   })
+  if(githubLink){
+    await prisma.project.create({
+      data: {
+        title: title,
+        description: description,
+        githubLink: githubLink,
+        domain: req.body.domain,
+        techstack: req.body.techStack,
+        ownerId: ownerId,
+        contributors: {
+          connect: creators
+        }
+      }
+    });
+  }else{
+    await prisma.project.create({
+      data: {
+        title: title,
+        description: description,
+        story: story,
+        documentation: documentation,
+        domain: req.body.domain,
+        techstack: req.body.techStack,
+        ownerId: ownerId,
+        contributors: {
+          connect: creators
+        }
+      }
+    });
+  }
 
+  res.status(201).send({
+    message: "Project added successfully. Wait for the admin to approve it."
+  });
+});
 
-  //   res.status(200).send({
-  //     message: "Project approved successfully and added to the newly created builder profile for this user."
-  //   });
-  //}
-//}
-);
+app.get("/projects", async(req, res) => {
+  const projects = await prisma.builderProject.findMany({
+    include: {
+      projects: true
+    }
+  });
 
+  if (projects.length === 0) {
+    return res.status(404).send({
+      message: "No projects found."
+    });
+  }
 
+  res.status(200).send({
+    projects: projects
+  });
+});
 
+app.get("/projects/:projectId", async(req, res) => {
+  const { projectId } = req.params;
+
+  const project = await prisma.builderProject.findUnique({
+    where: {
+      id: projectId
+    },
+    include: {
+      owner: true,
+      contributors: true
+    }
+  });
+
+  const projectDetails = await prisma.project.findUnique({
+    where: {
+      id: projectId
+    }
+  });
+
+  if (!project) {
+    return res.status(404).send({
+      message: "Project not found."
+    });
+  }
+
+  res.status(200).send({
+    project: projectDetails
+  });
+});
 
 
 app.listen(PORT, () => {
-  console.log(`Chatbot server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

@@ -7,16 +7,6 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
-enum UserLevel {
-  ADMIN
-  GENERAL
-  CORE_GENERAL
-}
-
-enum ProjectStatus {
-  Waiting
-  Aproved
-}
 
 model User {
   id              String          @id @default(uuid())
@@ -28,7 +18,6 @@ model User {
   updatedAt       DateTime        @updatedAt
   lastSeen        DateTime
   builderProfile  BuilderProfile?
-
   projects        Project[]       @relation("UserProjects")
   createdProjects UserProject[]
 }
@@ -44,6 +33,7 @@ model BuilderProfile {
   hasPortfolio   Boolean          @default(false)
   portfolioSite  String?
   profileImage   String?
+  mail           String?          @unique
   user           User             @relation(fields: [userId], references: [id])
   builtProjects  BuilderProject[] @relation("BuilderProfileToBuilderProject")
 }
@@ -51,7 +41,7 @@ model BuilderProfile {
 model Project {
   id            String          @id @default(uuid())
   title         String          @unique
-  description   String?
+  description   String
   githubLink    String?
   story         String?
   documentation String?
@@ -73,17 +63,25 @@ model UserProject {
   project   Project  @relation(fields: [projectId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
 
-
   @@unique([userId, projectId])
 }
-
 
 model BuilderProject {
   id         String           @id @default(uuid())
   projectId  String           @unique
-  githubLink String
+  githubLink String?
   addedAt    DateTime         @default(now())
   project    Project          @relation(fields: [projectId], references: [id])
   builder    BuilderProfile[] @relation("BuilderProfileToBuilderProject")
 }
 
+enum UserLevel {
+  ADMIN
+  GENERAL
+  CORE_GENERAL
+}
+
+enum ProjectStatus {
+  Waiting
+  Aproved
+}

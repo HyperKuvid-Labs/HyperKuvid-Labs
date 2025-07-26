@@ -43,7 +43,7 @@ import {Sidebar, SidebarBody, SidebarLink} from "@/components/ui/sidebar";
 import { ProjectGrid } from "./project_grid";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-
+import { ExternalLink } from "lucide-react";
 
 // Main Dashboard component with ProjectGrid
 function MainDashboard({ selectedCategory }: { selectedCategory: string }) {

@@ -90,14 +90,15 @@ export default function SignupPage() {
       <div className="w-full max-w-4xl">
         {/* Header with Logo */}
         <div className="flex items-center justify-center space-x-3 mb-8">
-          <img
-            src="/logo.jpg"
-            alt="HyperKuvid Labs"
-            className="w-10 h-10 rounded-lg object-cover"
-          />
+          <Link href="/">
+            <img
+              src="/logo.jpg"
+              alt="HyperKuvid Labs"
+              className="w-10 h-10 rounded-lg object-cover cursor-pointer"
+            />
+          </Link>
           <span className="text-2xl font-bold text-white">HyperKuvid Labs</span>
         </div>
-
         <div className="flex flex-col gap-6">
           <Card className="overflow-hidden p-0 bg-[#0F0F0F] border border-[#333333]">
             <CardContent className="grid p-0 md:grid-cols-2">
@@ -111,9 +112,12 @@ export default function SignupPage() {
               <form className="p-6 md:p-8" onSubmit={handleSubmit}>
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col items-center text-center">
-                    <h1 className="text-2xl font-bold text-white">Join as a Builder</h1>
+                    <h1 className="text-2xl font-bold text-white">Join as a User</h1>
                     <p className="text-gray-400 text-balance">
-                      Create your builder account to get started
+                      Create your user account to get started
+                    </p>
+                    <p className="text-[#A855F7] text-balance mt-1 font-bold">
+                      Add your projects, get approved and become a builder
                     </p>
                   </div>
                   

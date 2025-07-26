@@ -27,7 +27,7 @@ interface Project {
   githubLink: string
   story: string | null
   documentation: string | null
-  domain: string
+  domain: string[] | string // Support both array and string for backward compatibility
   status: "Waiting" | "Aproved"
   createdAt: Date
   updatedAt: Date
@@ -114,10 +114,11 @@ const colorSchemes = [
 ]
 
 const domainConfig = {
-  CS: { icon: Code, label: "Computer Science" },
-  MECH: { icon: Wrench, label: "Mechanical" },
-  ELEC: { icon: Zap, label: "Electrical" },
-  CHEM: { icon: FlaskConical, label: "Chemical" },
+  CS: { icon: Code, label: "Computer Science", color: "bg-blue-600/50 text-blue-100" },
+  MECH: { icon: Wrench, label: "Mechanical", color: "bg-orange-600/50 text-orange-100" },
+  ELEC: { icon: Zap, label: "Electrical", color: "bg-yellow-600/50 text-yellow-100" },
+  CHEM: { icon: FlaskConical, label: "Chemical", color: "bg-green-600/50 text-green-100" },
+  Mechanical: { icon: Wrench, label: "Mechanical", color: "bg-orange-600/50 text-orange-100" }, // Added for compatibility
 }
 
 export const ProjectCard = ({ project, colorScheme }: { project: Project; colorScheme: any }) => {
@@ -128,6 +129,19 @@ export const ProjectCard = ({ project, colorScheme }: { project: Project; colorS
   useEffect(() => {
     setIsClient(true)
   }, [])
+  
+  // Normalize domain to always be an array
+  const getDomains = (): string[] => {
+    if (Array.isArray(project.domain)) {
+      return project.domain
+    }
+    if (typeof project.domain === 'string') {
+      return [project.domain]
+    }
+    return [] // Fallback for undefined/null
+  }
+  
+  const domains = getDomains()
   
   // Get team members for animated tooltip
   const getTeamMembers = () => {
@@ -163,14 +177,19 @@ export const ProjectCard = ({ project, colorScheme }: { project: Project; colorS
     return text.slice(0, maxLength) + "..."
   }
 
-  // Format date consistently for server and client
+  // Format date consistently for server and client using ISO format
   const formatDate = (date: Date) => {
-    // Use a fixed locale and format to prevent hydration mismatch
-    return date.toLocaleDateString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric'
-    })
+    if (!isClient) {
+      // Return placeholder for SSR to prevent hydration mismatch
+      return "••/••/••••"
+    }
+    
+    // Client-side rendering with consistent format
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    
+    return `${month}/${day}/${year}`
   }
 
   return (
@@ -202,6 +221,24 @@ export const ProjectCard = ({ project, colorScheme }: { project: Project; colorS
 
       {/* Content Section */}
       <div className="p-6">
+        {/* Domain Badges */}
+        <div className="flex flex-wrap gap-2 mb-3">
+          {domains.map((domainName, index) => {
+            const config = domainConfig[domainName as keyof typeof domainConfig]
+            return (
+              <Badge 
+                key={index} 
+                className={cn(
+                  "text-xs font-medium",
+                  config?.color || "bg-gray-600/50 text-gray-100"
+                )}
+              >
+                {config?.label || domainName}
+              </Badge>
+            )
+          })}
+        </div>
+
         {/* Project Title */}
         <h3 className={cn("text-xl font-bold mb-3 line-clamp-2", colorScheme.accent)}>
           {project.title}
@@ -216,7 +253,7 @@ export const ProjectCard = ({ project, colorScheme }: { project: Project; colorS
         <div className={cn("flex items-center gap-4 text-xs mb-4 opacity-70", colorScheme.accent)}>
           <div className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
-            {isClient ? formatDate(project.createdAt) : '---'}
+            <span suppressHydrationWarning>{formatDate(project.createdAt)}</span>
           </div>
           <div className="flex items-center gap-1">
             <Users className="h-3 w-3" />
@@ -241,6 +278,7 @@ export const ProjectCard = ({ project, colorScheme }: { project: Project; colorS
                 ? "border-white/20 text-white hover:bg-white/10" 
                 : "border-gray-700/30 text-current hover:bg-gray-800/20"
             )}
+            onClick={() => window.location.href = `/gallery/${project.id}`}
           >
             Read More
             <ExternalLink className="ml-2 h-3 w-3" />

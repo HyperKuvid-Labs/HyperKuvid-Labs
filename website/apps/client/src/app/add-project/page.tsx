@@ -24,6 +24,8 @@ import {
   Upload,
   CheckCircle,
   AlertCircle,
+  Image as ImageIcon,
+  File,
 } from "lucide-react"
 
 interface GitHubRepo {
@@ -77,6 +79,7 @@ export default function AddProjectPage() {
   const [newContributor, setNewContributor] = useState("")
   const [progress, setProgress] = useState(0)
   const [newSkill, setNewSkill] = useState("")
+  const [dragActive, setDragActive] = useState(false)
 
   const addSkill = () => {
     if (newSkill.trim() && !formData.tools.includes(newSkill.trim())) {
@@ -188,6 +191,47 @@ export default function AddProjectPage() {
 
   const handleFileUpload = (files: File[]) => {
     setFormData((prev) => ({ ...prev, documentation: files }))
+  }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setFormData((prev) => ({ ...prev, image: file }))
+    }
+  }
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true)
+    } else if (e.type === "dragleave") {
+      setDragActive(false)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0]
+      if (file.type.startsWith('image/')) {
+        setFormData((prev) => ({ ...prev, image: file }))
+      }
+    }
+  }
+
+  const removeImage = () => {
+    setFormData((prev) => ({ ...prev, image: null }))
+  }
+
+  const removeDocumentationFile = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      documentation: prev.documentation.filter((_, i) => i !== index)
+    }))
   }
 
   return (
@@ -335,20 +379,57 @@ export default function AddProjectPage() {
               {/* Project Image Upload */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-white">Project Image</Label>
-                <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-400 transition-colors bg-gray-900">
-                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-300">Click to upload or drag and drop</p>
-                  <p className="text-xs text-gray-400">PNG, JPG up to 5MB</p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) setFormData((prev) => ({ ...prev, image: file }))
-                    }}
-                  />
-                </div>
+                {formData.image ? (
+                  <div className="relative border-2 border-purple-500 rounded-lg p-4 bg-gradient-to-br from-purple-900/20 to-black">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                        <ImageIcon className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">{formData.image.name}</p>
+                        <p className="text-gray-400 text-sm">{(formData.image.size / 1024 / 1024).toFixed(2)} MB</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={removeImage}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 cursor-pointer relative overflow-hidden
+                      ${dragActive 
+                        ? 'border-purple-400 bg-gradient-to-br from-purple-900/30 to-black' 
+                        : 'border-purple-600 hover:border-purple-400 bg-gradient-to-br from-purple-900/10 to-black hover:from-purple-900/20'
+                      }`}
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={handleDrop}
+                    onClick={() => document.getElementById('image-upload')?.click()}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-transparent opacity-50"></div>
+                    <div className="relative z-10">
+                      <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Upload className="w-6 h-6 text-white" />
+                      </div>
+                      <p className="text-white font-medium mb-1">Click to upload or drag and drop</p>
+                      <p className="text-purple-300 text-sm">PNG, JPG up to 5MB</p>
+                    </div>
+                    <input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                  </div>
+                )}
               </div>
             </TabsContent>
 
@@ -394,11 +475,124 @@ export default function AddProjectPage() {
                 />
               </div>
 
+              {/* Project Image Upload - Same as GitHub Only tab */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-white">Project Image</Label>
+                {formData.image ? (
+                  <div className="relative border-2 border-purple-500 rounded-lg p-4 bg-gradient-to-br from-purple-900/20 to-black">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                        <ImageIcon className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">{formData.image.name}</p>
+                        <p className="text-gray-400 text-sm">{(formData.image.size / 1024 / 1024).toFixed(2)} MB</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={removeImage}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 cursor-pointer relative overflow-hidden
+                      ${dragActive 
+                        ? 'border-purple-400 bg-gradient-to-br from-purple-900/30 to-black' 
+                        : 'border-purple-600 hover:border-purple-400 bg-gradient-to-br from-purple-900/10 to-black hover:from-purple-900/20'
+                      }`}
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={handleDrop}
+                    onClick={() => document.getElementById('image-upload-full')?.click()}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-transparent opacity-50"></div>
+                    <div className="relative z-10">
+                      <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Upload className="w-6 h-6 text-white" />
+                      </div>
+                      <p className="text-white font-medium mb-1">Click to upload or drag and drop</p>
+                      <p className="text-purple-300 text-sm">PNG, JPG up to 5MB</p>
+                    </div>
+                    <input
+                      id="image-upload-full"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                  </div>
+                )}
+              </div>
+
               {/* Documentation Upload */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-white">Documentation Upload</Label>
-                <div className="w-full max-w-4xl mx-auto min-h-96 border border-dashed bg-white border-gray-200 rounded-lg">
-                  <FileUpload onChange={handleFileUpload} />
+                
+                {/* Custom File Upload Component */}
+                <div className="border-2 border-dashed border-purple-600 rounded-lg bg-gradient-to-br from-purple-900/10 to-black hover:from-purple-900/20 transition-all duration-200">
+                  <div className="p-8">
+                    {/* Upload Area */}
+                    <div className="text-center mb-6">
+                      <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <FileText className="w-8 h-8 text-white" />
+                      </div>
+                      <h3 className="text-white text-lg font-semibold mb-2">Upload Documentation</h3>
+                      <p className="text-purple-300 mb-4">Drop your files here or click to browse</p>
+                      <input
+                        type="file"
+                        multiple
+                        accept=".pdf,.doc,.docx,.txt,.md"
+                        className="hidden"
+                        id="documentation-upload"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files || [])
+                          handleFileUpload([...formData.documentation, ...files])
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => document.getElementById('documentation-upload')?.click()}
+                        className="bg-purple-600 hover:bg-purple-700 text-white"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Choose Files
+                      </Button>
+                    </div>
+
+                    {/* File List */}
+                    {formData.documentation.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-white font-medium mb-3">Uploaded Files:</h4>
+                        {formData.documentation.map((file, index) => (
+                          <div key={index} className="flex items-center space-x-3 p-3 bg-gray-900/50 rounded-lg border border-purple-500/30">
+                            <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                              <File className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-white font-medium">{file.name}</p>
+                              <p className="text-gray-400 text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeDocumentationFile(index)}
+                              className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </TabsContent>
@@ -415,7 +609,7 @@ export default function AddProjectPage() {
                 className="flex-1 bg-gray-800 text-white border-gray-600 focus:ring-purple-500 focus:border-purple-500"
                 onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addContributor())}
               />
-              <Button type="button" onClick={addContributor} className="bg-black text-white hover:bg-gray-800">
+              <Button type="button" onClick={addContributor} className="bg-purple-600 text-white hover:bg-purple-700">
                 <Plus className="w-4 h-4 mr-1" />
                 Add
               </Button>
@@ -424,10 +618,10 @@ export default function AddProjectPage() {
             {formData.contributors.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {formData.contributors.map((email) => (
-                  <Badge key={email} variant="secondary" className="flex items-center space-x-1 bg-gray-700 text-white">
+                  <Badge key={email} variant="secondary" className="flex items-center space-x-1 bg-purple-700 text-white">
                     <User className="w-3 h-3" />
                     <span>{email}</span>
-                    <button type="button" onClick={() => removeContributor(email)} className="ml-1 hover:text-red-600">
+                    <button type="button" onClick={() => removeContributor(email)} className="ml-1 hover:text-red-300">
                       <X className="w-3 h-3" />
                     </button>
                   </Badge>
@@ -481,7 +675,7 @@ export default function AddProjectPage() {
                 {formData.tools.map((skill, index) => (
                   <span
                     key={index}
-                    className="bg-gray-700 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                    className="bg-purple-700 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2"
                   >
                     {skill}
                     <button
@@ -506,7 +700,7 @@ export default function AddProjectPage() {
             >
               Save Draft
             </Button>
-            <Button type="submit" className="bg-black text-white hover:bg-gray-800 px-8" disabled={progress < 100}>
+            <Button type="submit" className="bg-purple-600 text-white hover:bg-purple-700 px-8" disabled={progress < 100}>
               <CheckCircle className="w-4 h-4 mr-2" />
               Submit Project
             </Button>

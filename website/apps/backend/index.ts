@@ -7,7 +7,9 @@ import cors from 'cors';
 import nodemailer from 'nodemailer';
 import { stat } from 'fs';
 import { get } from 'http';
-import {bcrypt} from 'bcrypt';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import fs from 'fs';
 
 const prisma = new PrismaClient();
 
@@ -16,7 +18,30 @@ app.use(cors());
 app.use(express.json());
 const PORT = 3000;
 
-const trasnsporter = nodemailer.createTransport({
+const JWT_SECRET = process.env.JWT_SECRET || 'SeCr3tKeyHkL789'; 
+
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+        return res.status(401).json({ error: 'Access token required' });
+    }
+    
+    if (!authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Invalid authorization format' });
+    }
+    
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ error: 'Invalid or expired token' });
+        }
+        req.user = user;
+        next();
+    });
+};
+
+const transporter = nodemailer.createTransport({
   host : 'smtp.gmail.com',
   port : 587,
   secure : false,
@@ -59,7 +84,26 @@ app.post("/register/user", async(req, res) => {
     }
   });
 
-  res.send({message: "User registered successfully", user: newUser.name}).status(201);
+  const token = jwt.sign(
+    { 
+      userId: newUser.id, 
+      email: newUser.email, 
+      level: newUser.level 
+    },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+
+  res.status(201).json({
+    message: "User registered successfully", 
+    user: {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      level: newUser.level
+    },
+    token: token
+  });
 });
 
 app.post("/user/login", async (req, res) => {
@@ -93,15 +137,34 @@ app.post("/user/login", async (req, res) => {
   });
 
   if(user.level == "ADMIN"){
-    res.send({message: "Please Login with admin page"}).status(400);
-  };
+    return res.status(400).json({message: "Please Login with admin page"});
+  }
 
-  res.send({message: "User Logged in Successfully"}).status(200);
+  const token = jwt.sign(
+    { 
+      userId: user.id, 
+      email: user.email, 
+      level: user.level 
+    },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+
+  res.status(200).json({
+    message: "User Logged in Successfully",
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      level: user.level
+    },
+    token: token
+  });
 });
 
-app.post("/admin/login", async(requestAnimationFrame, res) => {
+app.post("/admin/login", async(req, res) => {
   //so here are gonna check the level of the user and login
-  const {email, password } = requestAnimationFrame.body;
+  const {email, password } = req.body;
 
   const user = await prisma.user.findFirst({
     where: {
@@ -130,78 +193,112 @@ app.post("/admin/login", async(requestAnimationFrame, res) => {
   });
 
   if(user.level == "GENERAL" || user.level == "CORE_GENERAL"){
-    res.send({message: "Please Login with user page"}).status(400);
-  };
+    return res.status(400).json({message: "Please Login with user page"});
+  }
 
-  res.send({message: "Admin Logged in Successfully"}).status(200);
+  // Generate JWT token for admin
+  const token = jwt.sign(
+    { 
+      userId: user.id, 
+      email: user.email, 
+      level: user.level 
+    },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+
+  res.status(200).json({
+    message: "Admin Logged in Successfully",
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      level: user.level
+    },
+    token: token
+  });
 });
 
-app.post("/project/add/:userId", async(req, res) => {
-  const { userId } = req.params;
+app.post("/project/add/:userId", authenticateToken, async(req, res) => {
+  try{
+    const { userId } = req.params;
+
+    if (!userId || userId === 'undefined') {
+    return res.status(400).json({ error: 'Invalid user ID provided' });
+  }
+
+  if (req.user.userId !== userId) {
+    return res.status(403).json({ error: 'Access denied. You can only add projects for yourself.' });
+  }
 
   if (req.body.githubLink) {
     const user = await prisma.user.findUnique({
       where: {
-        id: userId
-      }
+        id: userId,
+      },
     });
-  
-  if (!user) {
-    return res.status(400).send({
-      message: "Please register before adding a project."
-    });
-  }
 
-
-  await prisma.project.create({
-    data: {
-      title: req.body.title,
-      description: req.body.description,
-      githubLink:req.body.githubLink,
-      story: req.body.story,
-      documentation: req.body.documentation,
-      domain: req.body.domain,
-      techstack: req.body.techstack,
-      ownerId: userId,
-
+    if (!user) {
+      return res.status(400).json({
+        message: "Please register before adding a project.",
+      });
     }
-  })
 
-  //here we are getting the project id that we just created above 
-  const getProjectId = await prisma.project.findFirst({
-    where: {
-      ownerId: userId,
-      title: req.body.title,  
-    },
-    select: {
-      id: true, 
-    },
-  });
+    const techStackArray = [
+        req.body.domain || 'General',
+        req.body.techstack || 'Not specified'
+    ];
 
-  if (!getProjectId) {
-    throw new Error("Builder profile not found for this user.");
-  }
+    await prisma.project.create({
+      data: {
+        title: req.body.title,
+        description: req.body.description,
+        githubLink: req.body.githubLink,
+        story: req.body.story,
+        documentation: req.body.documentation,
+        techstack: techStackArray, 
+        ownerId: userId,
+      },
+    });
 
-  const creators = req.body.creators;
-  for(const creatorid of creators){
-    await prisma.userProject.create({
-      data:{
-        userId:creatorid,
-        projectId:getProjectId.id
-      }
-    })
-  }
+    //here we are getting the project id that we just created above
+    const getProjectId = await prisma.project.findFirst({
+      where: {
+        ownerId: userId,
+        title: req.body.title,
+      },
+      select: {
+        id: true,
+      },
+    });
 
-   const mailData = {
-    from: process.env.HKL_GMAIL,
-    to: process.env.HKL_GMAIL,
-    cc:[
-      process.env.ADMIN1_GMAIL,
-      process.env.ADMIN2_GMAIL,
-      process.env.ADMIN3_GMAIL
-    ],
-    subject: '🔗 GitHub Project Submission - Auto Review',
-    html: `
+    if (!getProjectId) {
+      return res.status(500).json({ error: "Failed to create project." }); 
+    }
+
+    const creators = req.body.creators || [];
+    if (!creators.includes(userId)) {
+        creators.push(userId);
+    }
+    for (const creatorid of creators) {
+      await prisma.userProject.create({
+        data: {
+          userId: creatorid,
+          projectId: getProjectId.id,
+        },
+      });
+    }
+
+    const mailData = {
+      from: process.env.HKL_GMAIL,
+      to: process.env.HKL_GMAIL,
+      cc: [
+        process.env.ADMIN1_GMAIL,
+        process.env.ADMIN2_GMAIL,
+        process.env.ADMIN3_GMAIL,
+      ],
+      subject: "🔗 GitHub Project Submission - Auto Review",
+      html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
         <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           <h2 style="color: #333; border-bottom: 2px solid #28a745; padding-bottom: 10px; margin-bottom: 20px;">
@@ -232,12 +329,12 @@ app.post("/project/add/:userId", async(req, res) => {
           
           <p style="color: #6c757d; font-size: 12px; margin: 0; text-align: center;">
             This email was generated automatically by the HyperKuvid Labs project submission system.<br>
-            Submitted on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+            Submitted on: ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}
           </p>
         </div>
       </div>
     `,
-    text: `
+      text: `
 GitHub Project Submission - Auto Review
 
 SUBMITTER INFORMATION:
@@ -252,13 +349,20 @@ STATUS: Project will be automatically analyzed from the provided GitHub reposito
 
 ---
 This email was generated automatically by the HyperKuvid Labs project submission system.
-Submitted on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
-    `
-  };
-  return res.status(201).send({
-    message: "Your project will be added after evaluation . Please wait for a while."
-  });
-} else {
+Submitted on: ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}
+    `,
+    };
+
+    try {
+      await transporter.sendMail(mailData);
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
+    return res.status(201).json({
+      message:
+        "Your project will be added after evaluation . Please wait for a while.",
+    });
+  } else {
   const { title, description, story, documentationLink, techStack, ownerId } = req.body;
   
   const user = await prisma.user.findUnique({
@@ -268,7 +372,7 @@ Submitted on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
   });
   
   if (!user) {
-    return res.status(400).send({
+    return res.status(400).json({
       message: "Please register before adding a project."
     });
   }
@@ -280,7 +384,7 @@ Submitted on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
   });
   
   if (ownerId !== userId && !owner) {
-    return res.status(400).send({
+    return res.status(400).json({
       message: "Owner not registered. Please provide a valid owner ID."
     });
   }
@@ -387,16 +491,22 @@ Submitted on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
       };
   
       try {
-        await trasnsporter.sendMail(mailData);
+        await transporter.sendMail(mailData);
       } catch (error) {
         console.error('Error sending email:', error);
       }
   
-      return res.status(201).send({
+      return res.status(201).json({
         message: "Your project will be added after evaluation. Please wait for a while."
       });
     }
-  });
+  }catch(err){
+    // Log error to erroinproject.txt
+    fs.appendFileSync('erroinproject.txt', `[${new Date().toISOString()}] ${err?.stack || err}\n\n`);
+    console.error("Error in /project/add/:userId route:", err);
+    res.status(500).json({ error: 'Internal server error' , message: err.message });
+  }
+});
 
 //the ask senior route
 app.post('/ask', async (req, res) => {
@@ -416,7 +526,7 @@ app.post('/ask', async (req, res) => {
 });
 
 //admin approving the project
-app.post('/admin/approveProjects/:projectId', async (req, res) => {
+app.post('/admin/approveProjects/:projectId', authenticateToken, async (req, res) => {
   const { projectId } = req.params;
   //so here the req.bidy will come as
   // {
@@ -564,7 +674,7 @@ Approved on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
     };
 
     try {
-      await trasnsporter.sendMail(builderMailData);
+      await transporter.sendMail(builderMailData);
     } catch (error) {
       console.error('Error sending email to builders:', error);
     }
@@ -643,7 +753,7 @@ Approved on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
       };
 
       try {
-        await trasnsporter.sendMail(newBuilderMailData);
+        await transporter.sendMail(newBuilderMailData);
       } catch (error) {
         console.error(`Error sending email to new builder ${creatorMail}:`, error);
       }
@@ -655,7 +765,7 @@ Approved on: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
   });
 });
 
-app.post("/admin/rejectProjects/:projectId", async (req, res) => {
+app.post("/admin/rejectProjects/:projectId", authenticateToken, async (req, res) => {
   const { projectId } = req.params;
   const creators = req.body.creators; 
   const message = req.body.message;
@@ -838,7 +948,7 @@ app.get("/projects", async(req, res) => {
   });
 });
 
-app.get("/projects/:projectId", async(req, res) => {
+app.get("/projects/:projectId", authenticateToken, async(req, res) => {
   const { projectId } = req.params;
 
   const project = await prisma.builderProject.findUnique({
@@ -894,7 +1004,7 @@ app.get("/user/:userId", (req, res) => {
 });
 
 //this route is about the projects that has not been approved yet
-app.get("/projects/notApproved", async(req, res) => {
+app.get("/projects/notApproved", authenticateToken, async(req, res) => {
   const projectsArray = await prisma.project.findMany({
     where:{
       status : "Waiting"
@@ -907,6 +1017,10 @@ app.get("/projects/notApproved", async(req, res) => {
 });
 
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+export default app; //exporting the app for testing purposes

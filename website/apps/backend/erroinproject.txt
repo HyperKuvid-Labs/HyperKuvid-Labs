@@ -1,0 +1,33 @@
+[2025-07-27T23:27:00.814Z] PrismaClientValidationError: 
+Invalid `prisma.user.findUnique()` invocation in
+/home/pradhep/HyperKuvid-Labs/website/apps/backend/index.ts:380:35
+
+  377   });
+  378 }
+  379 
+→ 380 const owner = await prisma.user.findUnique({
+        where: {
+          id: undefined,
+      ?   email?: String,
+      ?   AND?: UserWhereInput | UserWhereInput[],
+      ?   OR?: UserWhereInput[],
+      ?   NOT?: UserWhereInput | UserWhereInput[],
+      ?   name?: StringFilter | String,
+      ?   password?: StringFilter | String,
+      ?   level?: EnumUserLevelFilter | UserLevel,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   updatedAt?: DateTimeFilter | DateTime,
+      ?   lastSeen?: DateTimeFilter | DateTime,
+      ?   builderProfile?: BuilderProfileNullableScalarRelationFilter | BuilderProfileWhereInput | Null,
+      ?   projects?: ProjectListRelationFilter,
+      ?   createdProjects?: UserProjectListRelationFilter
+        }
+      })
+
+Argument `where` of type UserWhereUniqueInput needs at least one of `id` or `email` arguments. Available options are marked with ?.
+    at Dn (/home/pradhep/HyperKuvid-Labs/website/node_modules/@prisma/client/src/runtime/core/errorRendering/throwValidationException.ts:45:9)
+    at ri.throwValidationException [as handleRequestError] (/home/pradhep/HyperKuvid-Labs/website/node_modules/@prisma/client/src/runtime/RequestHandler.ts:202:7)
+    at ri.handleAndLogRequestError (/home/pradhep/HyperKuvid-Labs/website/node_modules/@prisma/client/src/runtime/RequestHandler.ts:174:12)
+    at ri.request (/home/pradhep/HyperKuvid-Labs/website/node_modules/@prisma/client/src/runtime/RequestHandler.ts:143:12)
+    at l (/home/pradhep/HyperKuvid-Labs/website/node_modules/@prisma/client/src/runtime/getPrismaClient.ts:862:24)
+

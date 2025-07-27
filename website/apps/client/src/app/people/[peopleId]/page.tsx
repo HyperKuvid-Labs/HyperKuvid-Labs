@@ -1,7 +1,8 @@
 "use client";
 import React from "react";
+import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import {
   Navbar,
   NavBody,
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   IconHome,
@@ -26,9 +28,11 @@ import {
   IconBrandGithub,
   IconBrandLinkedin,
   IconArrowLeft,
-  IconMail,
+  IconMapPin,
   IconCalendar,
+  IconMail,
   IconWorld,
+  IconExternalLink,
 } from "@tabler/icons-react";
 import { FloatingDock } from "@/components/ui/floating-dock";
 import { HoverEffect } from "@/components/ui/card-hover-effect";
@@ -37,15 +41,6 @@ import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { SparklesCore } from "@/components/ui/sparkles";
 import { EvervaultCard } from "@/components/ui/evervault-card";
-import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
-import { WobbleCard } from "@/components/ui/wobble-card";
-import { ContainerScroll } from "@/components/ui/container-scroll-animation";
-import { LampContainer } from "@/components/ui/lamp";
-import { MacbookScroll } from "@/components/ui/macbook-scroll";
-import { StickyScroll } from "@/components/ui/sticky-scroll-reveal";
-import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards";
-import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
-import { TracingBeam } from "@/components/ui/tracing-beam";
 import { 
   Calendar, 
   Users, 
@@ -61,11 +56,7 @@ import {
   Briefcase,
   GraduationCap,
   Link,
-  Clock,
-  Activity,
-  Target,
-  Award,
-  Lightbulb
+  Clock
 } from "lucide-react";
 
 // Types based on Prisma schema
@@ -109,16 +100,19 @@ interface BuilderProject {
   };
 }
 
-// Mock function to simulate API call
+// Mock function to simulate API call - replace with actual API call
 const getBuilderProfileById = async (userId: string): Promise<BuilderProfile | null> => {
+  // This would be replaced with actual API call to your backend
+  // Example: const response = await fetch(`/api/builders/${userId}`);
+  
+  // Mock data based on your schema
   const mockProfile: BuilderProfile = {
     id: "builder-1",
     userId: userId,
-    bio: "Passionate full-stack developer with expertise in modern web technologies. I love building innovative solutions that solve real-world problems and contribute to open-source projects. My journey in tech started with curiosity and has evolved into a passion for creating impactful digital experiences.",
+    bio: "Passionate full-stack developer with expertise in modern web technologies. I love building innovative solutions that solve real-world problems and contribute to open-source projects.",
     skills: [
       "React", "Next.js", "TypeScript", "Node.js", "Python", 
-      "PostgreSQL", "Prisma", "Docker", "AWS", "Git", "TensorFlow",
-      "GraphQL", "MongoDB", "Redis", "Kubernetes"
+      "PostgreSQL", "Prisma", "Docker", "AWS", "Git"
     ],
     linkedin: "pradheep-dev",
     x: "pradheep_dev",
@@ -168,23 +162,6 @@ const getBuilderProfileById = async (userId: string): Promise<BuilderProfile | n
           status: "Aproved",
           techstack: ["Node.js", "Arduino", "React Native", "MongoDB", "MQTT"]
         }
-      },
-      {
-        id: "bp-3",
-        projectId: "proj-3",
-        githubLink: "https://github.com/pradheep-dev/blockchain-voting",
-        addedAt: new Date("2024-01-10"),
-        project: {
-          id: "proj-3",
-          title: "Blockchain Voting System",
-          description: "Secure and transparent voting platform using blockchain technology to ensure election integrity.",
-          githubLink: "https://github.com/pradheep-dev/blockchain-voting",
-          story: "Democracy deserves transparency and security...",
-          documentation: "https://docs.blockchain-voting.dev",
-          createdAt: new Date("2024-01-01"),
-          status: "Aproved",
-          techstack: ["Solidity", "Web3.js", "React", "Hardhat", "IPFS"]
-        }
       }
     ]
   };
@@ -196,19 +173,19 @@ const getBuilderProfileById = async (userId: string): Promise<BuilderProfile | n
 const getUserLevelConfig = (level: string) => {
   switch (level) {
     case 'ADMIN':
-      return { color: 'bg-red-600', label: 'Admin', icon: <Award className="w-4 h-4" /> };
+      return { color: 'bg-red-600', label: 'Admin' };
     case 'CORE_GENERAL':
-      return { color: 'bg-purple-600', label: 'Core Member', icon: <Star className="w-4 h-4" /> };
+      return { color: 'bg-purple-600', label: 'Core Member' };
     case 'GENERAL':
-      return { color: 'bg-blue-600', label: 'Member', icon: <Users className="w-4 h-4" /> };
+      return { color: 'bg-blue-600', label: 'Member' };
     default:
-      return { color: 'bg-gray-600', label: 'Member', icon: <Users className="w-4 h-4" /> };
+      return { color: 'bg-gray-600', label: 'Member' };
   }
 };
 
-export default function BuilderProfilePage({ params }: { params: Promise<{ peopleId: string }> }) {
-  const resolvedParams = use(params);
-  const peopleId = resolvedParams.peopleId;
+export default function BuilderProfilePage() {
+  const params = useParams();
+  const peopleId = params.peopleId as string;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [builderProfile, setBuilderProfile] = useState<BuilderProfile | null>(null);
@@ -256,20 +233,10 @@ export default function BuilderProfilePage({ params }: { params: Promise<{ peopl
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <LampContainer>
-          <motion.h1
-            initial={{ opacity: 0.5, y: 100 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: 0.3,
-              duration: 0.8,
-              ease: "easeInOut",
-            }}
-            className="mt-8 bg-gradient-to-br from-slate-300 to-slate-500 py-4 bg-clip-text text-center text-4xl font-medium tracking-tight text-transparent md:text-7xl"
-          >
-            Loading Profile...
-          </motion.h1>
-        </LampContainer>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading builder profile...</p>
+        </div>
       </div>
     );
   }
@@ -331,57 +298,6 @@ export default function BuilderProfilePage({ params }: { params: Promise<{ peopl
     { name: "People", link: "/people" },
   ];
 
-  // Bento Grid Items for Profile Stats
-  const bentoItems = [
-    {
-      title: "Projects Built",
-      description: `${builderProfile.builtProjects.length} innovative solutions`,
-      header: (
-        <div className="flex items-center justify-center h-full bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg">
-          <Code className="w-8 h-8 text-white" />
-        </div>
-      ),
-      icon: <Code className="h-4 w-4 text-neutral-500" />,
-    },
-    {
-      title: "Skills Mastered",
-      description: `${builderProfile.skills.length} technologies and frameworks`,
-      header: (
-        <div className="flex items-center justify-center h-full bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg">
-          <Lightbulb className="w-8 h-8 text-white" />
-        </div>
-      ),
-      icon: <Lightbulb className="h-4 w-4 text-neutral-500" />,
-    },
-    {
-      title: "Success Rate",
-      description: `${Math.round((builderProfile.builtProjects.filter(p => p.project.status === 'Aproved').length / builderProfile.builtProjects.length) * 100)}% approval rate`,
-      header: (
-        <div className="flex items-center justify-center h-full bg-gradient-to-br from-green-500 to-green-700 rounded-lg">
-          <Target className="w-8 h-8 text-white" />
-        </div>
-      ),
-      icon: <Target className="h-4 w-4 text-neutral-500" />,
-    },
-    {
-      title: "Portfolio Status",
-      description: builderProfile.hasPortfolio ? "Professional portfolio live" : "Portfolio in progress",
-      header: (
-        <div className="flex items-center justify-center h-full bg-gradient-to-br from-orange-500 to-orange-700 rounded-lg">
-          <Briefcase className="w-8 h-8 text-white" />
-        </div>
-      ),
-      icon: <Briefcase className="h-4 w-4 text-neutral-500" />,
-    },
-  ];
-
-  // Moving cards for skills
-  const skillCards = builderProfile.skills.slice(0, 6).map((skill, index) => ({
-    quote: skill,
-    name: "Technology",
-    title: `Skill ${index + 1}`,
-  }));
-
   return (
     <div className="min-h-screen bg-black">
       <Navbar>
@@ -421,78 +337,62 @@ export default function BuilderProfilePage({ params }: { params: Promise<{ peopl
         </MobileNav>
       </Navbar>
 
-      <TracingBeam className="px-6">
-        <main className="pt-20 pb-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Back Button */}
-            <Button 
-              variant="outline" 
-              className="mb-8 border-purple-500/30 hover:border-purple-500/50"
-              onClick={() => window.location.href = "/people"}
-            >
-              <IconArrowLeft className="mr-2 h-4 w-4" />
-              Back to People
-            </Button>
+      <main className="pt-20 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Back Button */}
+          <Button 
+            variant="outline" 
+            className="mb-8 border-purple-500/30 hover:border-purple-500/50"
+            onClick={() => window.location.href = "/people"}
+          >
+            <IconArrowLeft className="mr-2 h-4 w-4" />
+            Back to People
+          </Button>
 
-            {/* Hero Section with Container Scroll */}
-            <ContainerScroll
-              titleComponent={
-                <div className="flex flex-col items-center">
-                  <Avatar className="h-32 w-32 border-4 border-purple-500/50 mb-6">
-                    <AvatarImage src={builderProfile.profileImage || undefined} alt={builderProfile.user.name} />
-                    <AvatarFallback className="bg-purple-600 text-white text-2xl">
-                      {builderProfile.user.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
-                    <TextGenerateEffect words={builderProfile.user.name} />
-                  </h1>
-                  <div className="flex items-center gap-3 mb-6">
-                    <Badge className={`${userLevelConfig.color} text-white flex items-center gap-2`}>
-                      {userLevelConfig.icon}
-                      {userLevelConfig.label}
-                    </Badge>
-                    <Badge variant="outline" className="border-purple-500/30 text-purple-300">
-                      Builder
-                    </Badge>
-                  </div>
-                </div>
-              }
-            >
-              <div className="mx-auto rounded-2xl object-cover h-full object-left-top">
-                <div className="h-full w-full bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 rounded-2xl p-8 flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <h3 className="text-2xl font-bold mb-4">Featured Work</h3>
-                    <p className="text-purple-200">Innovative projects that make a difference</p>
-                  </div>
-                </div>
+          {/* Profile Header with Background Gradient */}
+          <BackgroundGradient className="rounded-3xl mb-12 p-1 bg-black">
+            <div className="relative bg-black rounded-3xl p-8 overflow-hidden">
+              {/* Sparkles Background */}
+              <div className="absolute inset-0 w-full h-full">
+                <SparklesCore
+                  id="profile-sparkles"
+                  background="transparent"
+                  minSize={0.4}
+                  maxSize={1}
+                  particleDensity={40}
+                  className="w-full h-full"
+                  particleColor="#FFFFFF"
+                />
               </div>
-            </ContainerScroll>
-
-            {/* Profile Header with Background Gradient */}
-            <BackgroundGradient className="rounded-3xl mb-12 p-1 bg-black">
-              <div className="relative bg-black rounded-3xl p-8 overflow-hidden">
-                {/* Sparkles Background */}
-                <div className="absolute inset-0 w-full h-full">
-                  <SparklesCore
-                    id="profile-sparkles"
-                    background="transparent"
-                    minSize={0.4}
-                    maxSize={1}
-                    particleDensity={40}
-                    className="w-full h-full"
-                    particleColor="#FFFFFF"
-                  />
-                </div>
-                
-                {/* Meteors Effect */}
-                <Meteors number={20} />
-                
-                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* Social Links & Info */}
-                  <WobbleCard containerClassName="bg-gradient-to-br from-purple-900/20 via-purple-800/20 to-indigo-900/20 border border-purple-500/20">
-                    <div className="space-y-6">
-                      <h2 className="text-2xl font-bold text-white mb-4">Connect & Info</h2>
+              
+              {/* Meteors Effect */}
+              <Meteors number={20} />
+              
+              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Profile Info */}
+                <div className="lg:col-span-2 space-y-6">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                    <Avatar className="h-32 w-32 border-4 border-purple-500/50">
+                      <AvatarImage src={builderProfile.profileImage || undefined} alt={builderProfile.user.name} />
+                      <AvatarFallback className="bg-purple-600 text-white text-2xl">
+                        {builderProfile.user.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1 space-y-4">
+                      <div>
+                        <h1 className="text-4xl font-bold text-white mb-2">
+                          <TextGenerateEffect words={builderProfile.user.name} />
+                        </h1>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge className={`${userLevelConfig.color} text-white`}>
+                            {userLevelConfig.label}
+                          </Badge>
+                          <Badge variant="outline" className="border-purple-500/30 text-purple-300">
+                            Builder
+                          </Badge>
+                        </div>
+                      </div>
                       
                       {/* Social Links */}
                       <div className="flex flex-wrap gap-3">
@@ -549,75 +449,81 @@ export default function BuilderProfilePage({ params }: { params: Promise<{ peopl
                           </Button>
                         )}
                       </div>
+                    </div>
+                  </div>
 
-                      {/* User Info */}
-                      <div className="space-y-3 text-gray-300">
-                        <div className="flex items-center gap-2">
-                          <IconMail className="h-4 w-4 text-purple-400" />
-                          <span>{builderProfile.user.email}</span>
+                  {/* User Info */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-300">
+                    <div className="flex items-center gap-2">
+                      <IconMail className="h-4 w-4 text-purple-400" />
+                      <span>{builderProfile.user.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <IconCalendar className="h-4 w-4 text-purple-400" />
+                      <span suppressHydrationWarning>Joined {formatDate(builderProfile.user.createdAt)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-purple-400" />
+                      <span suppressHydrationWarning>Last seen {formatRelativeTime(builderProfile.user.lastSeen)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats Cards */}
+                <div className="space-y-4">
+                  <Card className="bg-transparent border-purple-500/30">
+                    <CardHeader>
+                      <CardTitle className="text-white">Builder Stats</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-white">{builderProfile.builtProjects.length}</div>
+                          <div className="text-sm text-gray-400">Projects Built</div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <IconCalendar className="h-4 w-4 text-purple-400" />
-                          <span suppressHydrationWarning>Joined {formatDate(builderProfile.user.createdAt)}</span>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-white">{builderProfile.skills.length}</div>
+                          <div className="text-sm text-gray-400">Skills</div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-purple-400" />
-                          <span suppressHydrationWarning>Last seen {formatRelativeTime(builderProfile.user.lastSeen)}</span>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-white">
+                            {builderProfile.builtProjects.filter(p => p.project.status === 'Aproved').length}
+                          </div>
+                          <div className="text-sm text-gray-400">Approved</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-white">
+                            {builderProfile.hasPortfolio ? "Yes" : "No"}
+                          </div>
+                          <div className="text-sm text-gray-400">Portfolio</div>
                         </div>
                       </div>
-                    </div>
-                  </WobbleCard>
-
-                  {/* Evervault Card */}
-                  <EvervaultCard text="Builder" />
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
-            </BackgroundGradient>
-
-            {/* Bento Grid Stats */}
-            <div className="mb-12">
-              <h2 className="text-3xl font-bold text-white mb-8 text-center">Builder Statistics</h2>
-              <BentoGrid className="max-w-4xl mx-auto">
-                {bentoItems.map((item, i) => (
-                  <BentoGridItem
-                    key={i}
-                    title={item.title}
-                    description={item.description}
-                    header={item.header}
-                    icon={item.icon}
-                    className={i === 3 || i === 6 ? "md:col-span-2" : ""}
-                  />
-                ))}
-              </BentoGrid>
             </div>
+          </BackgroundGradient>
 
-            {/* Bio Section */}
-            {builderProfile.bio && (
-              <WobbleCard containerClassName="bg-gradient-to-br from-purple-900/20 via-purple-800/20 to-indigo-900/20 border border-purple-500/20 mb-12">
-                <div className="p-8">
-                  <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-2">
-                    <BookOpen className="w-8 h-8 text-purple-400" />
-                    About
-                  </h2>
-                  <p className="text-gray-300 leading-relaxed text-lg">{builderProfile.bio}</p>
-                </div>
-              </WobbleCard>
-            )}
+          {/* Bio Section */}
+          {builderProfile.bio && (
+            <Card className="bg-transparent border-purple-500/30 mb-8">
+              <CardContent className="p-8">
+                <h2 className="text-2xl font-bold text-white mb-4">About</h2>
+                <p className="text-gray-300 leading-relaxed text-lg">{builderProfile.bio}</p>
+              </CardContent>
+            </Card>
+          )}
 
-            {/* Skills Moving Cards */}
-            <div className="mb-12">
-              <h2 className="text-3xl font-bold text-white mb-8 text-center">Core Technologies</h2>
-              <InfiniteMovingCards
-                items={skillCards}
-                direction="right"
-                speed="slow"
-                className="bg-gradient-to-br from-purple-900/20 via-purple-800/20 to-indigo-900/20"
-              />
-            </div>
+          {/* Tabs Section */}
+          <Tabs defaultValue="projects" className="space-y-8">
+            <TabsList className="grid w-full grid-cols-2 bg-transparent border border-purple-500/30">
+              <TabsTrigger value="projects" className="data-[state=active]:bg-purple-600">Built Projects</TabsTrigger>
+              <TabsTrigger value="skills" className="data-[state=active]:bg-purple-600">Skills</TabsTrigger>
+            </TabsList>
 
             {/* Projects Tab */}
-            <div className="mb-12">
-              <h2 className="text-3xl font-bold text-white mb-8 text-center">Built Projects</h2>
+            <TabsContent value="projects">
               {builderProfile.builtProjects.length > 0 ? (
                 <HoverEffect
                   items={builderProfile.builtProjects.map(bp => ({
@@ -635,38 +541,36 @@ export default function BuilderProfilePage({ params }: { params: Promise<{ peopl
                   </CardContent>
                 </Card>
               )}
-            </div>
+            </TabsContent>
 
-            {/* All Skills Badge Display */}
-            <WobbleCard containerClassName="bg-gradient-to-br from-purple-900/20 via-purple-800/20 to-indigo-900/20 border border-purple-500/20 mb-12">
-              <div className="p-8">
-                <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-2">
-                  <Zap className="w-8 h-8 text-purple-400" />
-                  All Skills
-                </h2>
-                {builderProfile.skills.length > 0 ? (
-                  <div className="flex flex-wrap gap-3">
-                    {builderProfile.skills.map((skill, index) => (
-                      <Badge 
-                        key={index} 
-                        variant="secondary" 
-                        className="bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/30 transition-colors text-sm py-2 px-4"
-                      >
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <h3 className="text-xl font-bold text-white mb-2">No Skills Listed</h3>
-                    <p className="text-gray-400">This builder hasn't added any skills yet.</p>
-                  </div>
-                )}
-              </div>
-            </WobbleCard>
-          </div>
-        </main>
-      </TracingBeam>
+            {/* Skills Tab */}
+            <TabsContent value="skills">
+              <Card className="bg-transparent border-purple-500/30">
+                <CardContent className="p-8">
+                  {builderProfile.skills.length > 0 ? (
+                    <div className="flex flex-wrap gap-3">
+                      {builderProfile.skills.map((skill, index) => (
+                        <Badge 
+                          key={index} 
+                          variant="secondary" 
+                          className="bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/30 transition-colors"
+                        >
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <h3 className="text-xl font-bold text-white mb-2">No Skills Listed</h3>
+                      <p className="text-gray-400">This builder hasn't added any skills yet.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </main>
 
       <footer className="w-full text-white px-6 pt-12 pb-6 bg-transparent">
         <div className="max-w-7xl mx-auto flex flex-col items-center justify-center gap-6">

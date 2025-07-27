@@ -30,7 +30,78 @@ import {
   IconBrandYoutube
 } from "@tabler/icons-react";
 import { FloatingDock } from "@/components/ui/floating-dock";
-import { WavyBackground } from "@/components/ui/wavy-background";
+// import FlowchartComponent from "@/components/flowchart";
+import WorkflowComponent from "@/components/flowchart";
+
+// Gemini-style gradient background component
+const GeminiBackground = () => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      {/* Base gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-black to-purple-800" />
+      
+      {/* Animated gradient orbs */}
+      <div className="absolute inset-0">
+        <div 
+          className="absolute w-96 h-96 rounded-full opacity-30 blur-3xl bg-gradient-to-r from-purple-500 to-pink-500 animate-pulse"
+          style={{
+            top: '10%',
+            left: '10%',
+            animation: 'float 6s ease-in-out infinite',
+          }}
+        />
+        <div 
+          className="absolute w-80 h-80 rounded-full opacity-25 blur-3xl bg-gradient-to-r from-blue-500 to-purple-600 animate-pulse"
+          style={{
+            top: '60%',
+            right: '10%',
+            animation: 'float 8s ease-in-out infinite reverse',
+          }}
+        />
+        <div 
+          className="absolute w-64 h-64 rounded-full opacity-20 blur-3xl bg-gradient-to-r from-purple-400 to-indigo-500 animate-pulse"
+          style={{
+            bottom: '20%',
+            left: '20%',
+            animation: 'float 10s ease-in-out infinite',
+          }}
+        />
+      </div>
+
+      {/* Interactive gradient that follows mouse */}
+      <div 
+        className="absolute w-96 h-96 rounded-full opacity-10 blur-3xl bg-gradient-to-r from-purple-300 to-pink-300 pointer-events-none transition-all duration-300 ease-out"
+        style={{
+          left: mousePosition.x - 192,
+          top: mousePosition.y - 192,
+        }}
+      />
+
+      {/* Mesh gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30" />
+      
+      {/* Add custom keyframes */}
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          33% { transform: translateY(-20px) rotate(120deg); }
+          66% { transform: translateY(10px) rotate(240deg); }
+        }
+      `}</style>
+    </div>
+  );
+};
 
 // Sparkles Component with hydration fix
 const Sparkles = () => {
@@ -75,10 +146,11 @@ const Sparkles = () => {
   );
 };
 
-// Hero Section Component with WavyBackground
+// Hero Section Component with Gemini-style background
 const HeroSection = () => {
   return (
-    <WavyBackground className="max-w-screen mx-auto pb-40 min-h-screen flex items-center justify-center">
+    <div className="relative max-w-screen mx-auto pb-40 min-h-screen flex items-center justify-center overflow-hidden">
+      <GeminiBackground />
       <Sparkles />
       
       <div className="relative z-40 text-center px-4">
@@ -94,7 +166,7 @@ const HeroSection = () => {
           HyperKuvid Labs is a curated talent hub where the best student-built projects across CS, Mechanical, Electrical, and Chemical domains converge to push boundaries and redefine what's possible.
         </p>
       </div>
-    </WavyBackground>
+    </div>
   );
 };
 
@@ -346,13 +418,13 @@ export default function Home() {
       {/* Hero Section with Sparkles and WavyBackground */}
       <HeroSection />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 relative z-10 py-10 max-w-7xl mx-auto mt-5 gap-8 bg-black">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 relative z-10 py-10 max-w-7xl mx-auto mt-5 gap-8 bg-transparent">
         {features.map((feature, index) => (
           <Feature key={feature.title} {...feature} index={index} />
         ))}
       </div>
 
-      <section className="py-16 max-w-7xl mx-auto px-4 bg-black">
+      <section className="py-16 max-w-7xl mx-auto px-4 bg-transparent">
         <h2 className="text-4xl font-bold text-white text-center mb-12">
           Flowchart
         </h2>
@@ -364,6 +436,14 @@ export default function Home() {
           />
         </div>
       </section>
+      {/* <section className="py-16 max-w-7xl mx-auto px-4 bg-black">
+        <h2 className="text-4xl font-bold text-white text-center mb-12">
+          Flowchart
+        </h2>
+        <div className="flex justify-center">
+          <FlowchartComponent />
+        </div>
+      </section> */}
 
       <Cta11 
         heading="Ready to Showcase Your Innovation?"

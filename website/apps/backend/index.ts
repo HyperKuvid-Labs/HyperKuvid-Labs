@@ -7,6 +7,7 @@ import cors from 'cors';
 import nodemailer from 'nodemailer';
 import { stat } from 'fs';
 import { get } from 'http';
+import {bcrypt} from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -33,6 +34,7 @@ app.get("/health", (req, res) => {
   res.json({status: "OK"}).status(200);
 });
 
+//user signup route
 app.post("/register/user", async(req, res) => {
   const {name, email, password} = req.body;
 
@@ -46,16 +48,92 @@ app.post("/register/user", async(req, res) => {
     return res.status(400).json({ error: 'User already exists.' });
   }
 
+  const hashedPassword = await bcrypt.hash(password, 10); //10 is the salting rounds
+
   const newUser = await prisma.user.create({
     data: {
       name : name, 
       email: email,
-      password: password,
+      password: hashedPassword,
       lastSeen: new Date(),
     }
   });
 
   res.send({message: "User registered successfully", user: newUser.name}).status(201);
+});
+
+app.post("/user/login", async (req, res) => {
+  //so here are gonna check the level of the user and login
+  const {email, password } = req.body;
+
+  const user = await prisma.user.findFirst({
+    where: {
+      email: email
+    }
+  });
+
+  if(!user) {
+    return res.status(400).json({ error: 'User not found.' });
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+
+  if(!isPasswordValid){
+    return res.status(400).json({ error: 'Invalid password.' });
+  }
+
+  //update the last login time
+  await prisma.user.update({
+    where:{
+      id: user.id
+    },
+    data: {
+      lastSeen: new Date()
+    }
+  });
+
+  if(user.level == "ADMIN"){
+    res.send({message: "Please Login with admin page"}).status(400);
+  };
+
+  res.send({message: "User Logged in Successfully"}).status(200);
+});
+
+app.post("/admin/login", async(requestAnimationFrame, res) => {
+  //so here are gonna check the level of the user and login
+  const {email, password } = requestAnimationFrame.body;
+
+  const user = await prisma.user.findFirst({
+    where: {
+      email: email
+    }
+  });
+
+  if(!user) {
+    return res.status(400).json({ error: 'User not found.' });
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+
+  if(!isPasswordValid){
+    return res.status(400).json({ error: 'Invalid password.' });
+  }
+
+  //update the last login time
+  await prisma.user.update({
+    where:{
+      id: user.id
+    },
+    data: {
+      lastSeen: new Date()
+    }
+  });
+
+  if(user.level == "GENERAL" || user.level == "CORE_GENERAL"){
+    res.send({message: "Please Login with user page"}).status(400);
+  };
+
+  res.send({message: "Admin Logged in Successfully"}).status(200);
 });
 
 app.post("/project/add/:userId", async(req, res) => {

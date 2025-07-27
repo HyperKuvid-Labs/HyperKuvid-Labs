@@ -893,6 +893,20 @@ app.get("/user/:userId", (req, res) => {
   });
 });
 
+//this route is about the projects that has not been approved yet
+app.get("/projects/notApproved", async(req, res) => {
+  const projectsArray = await prisma.project.findMany({
+    where:{
+      status : "Waiting"
+    }
+  });
+
+  res.status(200).send({
+    projects: projectsArray
+  });
+});
+
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

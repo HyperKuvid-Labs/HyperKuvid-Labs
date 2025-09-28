@@ -16,9 +16,23 @@ const prisma = new PrismaClient();
 const app = express();
 app.use(cors());  
 app.use(express.json());
-const PORT = 3000;
+const PORT = 5000;
 
 const JWT_SECRET = process.env.JWT_SECRET || 'SeCr3tKeyHkL789'; 
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1); 
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1); 
+});
+
+process.on('exit', (code) => {
+  console.log(`Process exiting with code: ${code}`);
+});
 
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -47,7 +61,7 @@ const transporter = nodemailer.createTransport({
   secure : false,
   auth : {
     user : process.env.HKL_GMAIL,
-    pass : 'zpmq rbgs rbls gpwk'
+    pass : process.env.HKL_GMAIL_PASS
   }
 }) 
 
@@ -61,49 +75,56 @@ app.get("/health", (req, res) => {
 
 //user signup route
 app.post("/register/user", async(req, res) => {
-  const {name, email, password} = req.body;
+  try {
+    console.log("[DEBUG]: registering user");
+    const {name, email, password} = req.body;
 
-  const user = await prisma.user.findFirst({
-    where: {
-      email: email
+    const user = await prisma.user.findFirst({
+      where: {
+        email: email
+      }
+    });
+
+    if(user) {
+      return res.status(400).json({ error: 'User already exists.' });
     }
-  });
 
-  if(user) {
-    return res.status(400).json({ error: 'User already exists.' });
+    const hashedPassword = await bcrypt.hash(password, 10); //10 is the salting rounds
+
+    const newUser = await prisma.user.create({
+      data: {
+        name : name, 
+        email: email,
+        password: hashedPassword,
+        lastSeen: new Date(),
+      }
+    });
+
+    const token = jwt.sign(
+      { 
+        userId: newUser.id, 
+        email: newUser.email, 
+        level: newUser.level 
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    console.log("[DEBUG]: user registered successfully");
+    res.status(201).json({
+      message: "User registered successfully", 
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        level: newUser.level
+      },
+      token: token
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-
-  const hashedPassword = await bcrypt.hash(password, 10); //10 is the salting rounds
-
-  const newUser = await prisma.user.create({
-    data: {
-      name : name, 
-      email: email,
-      password: hashedPassword,
-      lastSeen: new Date(),
-    }
-  });
-
-  const token = jwt.sign(
-    { 
-      userId: newUser.id, 
-      email: newUser.email, 
-      level: newUser.level 
-    },
-    JWT_SECRET,
-    { expiresIn: '24h' }
-  );
-
-  res.status(201).json({
-    message: "User registered successfully", 
-    user: {
-      id: newUser.id,
-      name: newUser.name,
-      email: newUser.email,
-      level: newUser.level
-    },
-    token: token
-  });
 });
 
 app.post("/user/login", async (req, res) => {
@@ -1018,9 +1039,18 @@ app.get("/projects/notApproved", authenticateToken, async(req, res) => {
 
 
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
+
+  server.on('error', (err) => {
+    console.error('Server Error:', err);
+  });
+
+  server.on('listening', () => {
+    console.log('Server is actively listening');
+  });
 }
+
 
 export default app; //exporting the app for testing purposes

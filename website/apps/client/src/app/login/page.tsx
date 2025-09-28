@@ -1,11 +1,65 @@
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
+import { authAPI, storeAuthData } from "@/lib/api"
 
 export default function LoginPage() {
+  const router = useRouter()
+
+  // Builder (user) login state
+  const [builderEmail, setBuilderEmail] = useState("")
+  const [builderPassword, setBuilderPassword] = useState("")
+  const [builderLoading, setBuilderLoading] = useState(false)
+  const [builderError, setBuilderError] = useState<string | null>(null)
+
+  // Admin login state
+  const [adminEmail, setAdminEmail] = useState("")
+  const [adminPassword, setAdminPassword] = useState("")
+  const [adminLoading, setAdminLoading] = useState(false)
+  const [adminError, setAdminError] = useState<string | null>(null)
+
+  const handleBuilderLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setBuilderError(null)
+    setBuilderLoading(true)
+    try {
+      const { data } = await authAPI.loginUser({ email: builderEmail, password: builderPassword })
+      // Expecting { token, user }
+      if (data?.token) {
+        storeAuthData(data.token, data.user || {})
+      }
+      router.push("/") // adjust route as needed
+    } catch (err: any) {
+      setBuilderError(err?.response?.data?.message || "Login failed")
+    } finally {
+      setBuilderLoading(false)
+    }
+  }
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAdminError(null)
+    setAdminLoading(true)
+    try {
+      const { data } = await authAPI.loginAdmin({ email: adminEmail, password: adminPassword })
+      if (data?.token) {
+        storeAuthData(data.token, data.user || { role: "admin" })
+      }
+      router.push("/admin") // adjust route if different
+    } catch (err: any) {
+      setAdminError(err?.response?.data?.message || "Admin login failed")
+    } finally {
+      setAdminLoading(false)
+    }
+  }
+
   return (
     <div className="bg-black flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-4xl">
@@ -41,7 +95,7 @@ export default function LoginPage() {
 
                 <TabsContent value="builder">
                   <CardContent className="grid p-0 md:grid-cols-2">
-                    <form className="p-6 md:p-8">
+                    <form className="p-6 md:p-8" onSubmit={handleBuilderLogin}>
                       <div className="flex flex-col gap-6">
                         <div className="flex flex-col items-center text-center">
                           <h1 className="text-2xl font-bold text-white">Welcome back, Builder</h1>
@@ -56,6 +110,8 @@ export default function LoginPage() {
                             type="email"
                             placeholder="m@example.com"
                             required
+                            value={builderEmail}
+                            onChange={(e) => setBuilderEmail(e.target.value)}
                             className="bg-[#1F1F1F] border-[#333333] text-white placeholder:text-gray-500 focus:border-[#A855F7] focus:ring-[#A855F7] transition-colors"
                           />
                         </div>
@@ -72,12 +128,19 @@ export default function LoginPage() {
                           <Input 
                             id="builder-password" 
                             type="password" 
-                            required 
+                            required
+                            value={builderPassword}
+                            onChange={(e) => setBuilderPassword(e.target.value)}
                             className="bg-[#1F1F1F] border-[#333333] text-white placeholder:text-gray-500 focus:border-[#A855F7] focus:ring-[#A855F7] transition-colors"
                           />
                         </div>
-                        <Button type="submit" className="w-full bg-[#A855F7] hover:bg-[#9333EA] text-white transition-colors">
-                          Login
+                        {builderError && <p className="text-sm text-red-400">{builderError}</p>}
+                        <Button
+                          type="submit"
+                          disabled={builderLoading}
+                          className="w-full bg-[#A855F7] hover:bg-[#9333EA] text-white transition-colors disabled:opacity-60"
+                        >
+                          {builderLoading ? "Logging in..." : "Login"}
                         </Button>
                         <div className="text-center text-sm text-gray-400">
                           Don&apos;t have an account?{" "}
@@ -99,7 +162,7 @@ export default function LoginPage() {
 
                 <TabsContent value="admin">
                   <CardContent className="grid p-0 md:grid-cols-2">
-                    <form className="p-6 md:p-8">
+                    <form className="p-6 md:p-8" onSubmit={handleAdminLogin}>
                       <div className="flex flex-col gap-6">
                         <div className="flex flex-col items-center text-center">
                           <h1 className="text-2xl font-bold text-white">Admin Access</h1>
@@ -114,6 +177,8 @@ export default function LoginPage() {
                             type="email"
                             placeholder="admin@hyperkuvid.com"
                             required
+                            value={adminEmail}
+                            onChange={(e) => setAdminEmail(e.target.value)}
                             className="bg-[#1F1F1F] border-[#333333] text-white placeholder:text-gray-500 focus:border-[#A855F7] focus:ring-[#A855F7] transition-colors"
                           />
                         </div>
@@ -130,12 +195,19 @@ export default function LoginPage() {
                           <Input 
                             id="admin-password" 
                             type="password" 
-                            required 
+                            required
+                            value={adminPassword}
+                            onChange={(e) => setAdminPassword(e.target.value)}
                             className="bg-[#1F1F1F] border-[#333333] text-white placeholder:text-gray-500 focus:border-[#A855F7] focus:ring-[#A855F7] transition-colors"
                           />
                         </div>
-                        <Button type="submit" className="w-full bg-[#A855F7] hover:bg-[#9333EA] text-white transition-colors">
-                          Login as Admin
+                        {adminError && <p className="text-sm text-red-400">{adminError}</p>}
+                        <Button
+                          type="submit"
+                          disabled={adminLoading}
+                          className="w-full bg-[#A855F7] hover:bg-[#9333EA] text-white transition-colors disabled:opacity-60"
+                        >
+                          {adminLoading ? "Logging in..." : "Login as Admin"}
                         </Button>
                       </div>
                     </form>

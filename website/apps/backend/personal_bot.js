@@ -1,30 +1,40 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.queryFromServer = queryFromServer;
 //@ts-nocheck
-import fs from "fs";
-import readline from "readline";
-import fetch from "node-fetch";
-import { stdin, stdout } from "process";
-import path from "path";
-
+const fs_1 = __importDefault(require("fs"));
+const node_fetch_1 = __importDefault(require("node-fetch"));
+const path_1 = __importDefault(require("path"));
 const MODEL = "llama3.1:8b";
-
-function prepare_senior_context(senior: string) {
-  let PERSONAL_DATA_PATH = "";
-  
-  if(senior.toLowerCase() === "pradheep"){
-    PERSONAL_DATA_PATH = path.join(__dirname, "seniors_personal_data", "pradheep.txt");
-  } else if(senior.toLowerCase() === "yuvanesh"){
-    PERSONAL_DATA_PATH = path.join(__dirname, "seniors_personal_data", "yuvi.txt");
-  } else {
-    throw new Error(`No personal data found for senior: ${senior}`);
-  }
-
-  // Check if file exists before reading
-  if (!fs.existsSync(PERSONAL_DATA_PATH)) {
-    throw new Error(`Personal data file not found: ${PERSONAL_DATA_PATH}`);
-  }
-
-  const personalData = fs.readFileSync(PERSONAL_DATA_PATH, "utf-8");
-  const systemInstruction = `
+function prepare_senior_context(senior) {
+    let PERSONAL_DATA_PATH = "";
+    if (senior.toLowerCase() === "pradheep") {
+        PERSONAL_DATA_PATH = path_1.default.join(__dirname, "seniors_personal_data", "pradheep.txt");
+    }
+    else if (senior.toLowerCase() === "yuvanesh") {
+        PERSONAL_DATA_PATH = path_1.default.join(__dirname, "seniors_personal_data", "yuvi.txt");
+    }
+    else {
+        throw new Error(`No personal data found for senior: ${senior}`);
+    }
+    // Check if file exists before reading
+    if (!fs_1.default.existsSync(PERSONAL_DATA_PATH)) {
+        throw new Error(`Personal data file not found: ${PERSONAL_DATA_PATH}`);
+    }
+    const personalData = fs_1.default.readFileSync(PERSONAL_DATA_PATH, "utf-8");
+    const systemInstruction = `
   You are a smart, helpful, slightly humorous AI clone of the user, built to act like their experienced but chill digital twin.
 
   You ONLY use the content and context from the PERSONAL DATA block to determine what the user knows, has done, and can talk about.
@@ -102,44 +112,42 @@ function prepare_senior_context(senior: string) {
 
   Use that to determine what you can say. Nothing more. Nothing less.
   `;
-
-  return systemInstruction;
+    return systemInstruction;
 }
-
 // Function to send message to Ollama and extract only content after </think>
-export async function queryFromServer(senior: string, userMessage: string): Promise<string> {
-  try {
-    // prepare the context from the senior's data accordingly first
-    const systemInstruction = prepare_senior_context(senior);
-    const res = await fetch("http://localhost:11434/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: MODEL,
-        stream: false,
-        messages: [
-          { role: "system", content: systemInstruction },
-          { role: "user", content: userMessage },
-        ],
-      }),
+function queryFromServer(senior, userMessage) {
+    return __awaiter(this, void 0, void 0, function* () {
+        var _a, _b, _c;
+        try {
+            // prepare the context from the senior's data accordingly first
+            const systemInstruction = prepare_senior_context(senior);
+            const res = yield (0, node_fetch_1.default)("http://localhost:11434/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    model: MODEL,
+                    stream: false,
+                    messages: [
+                        { role: "system", content: systemInstruction },
+                        { role: "user", content: userMessage },
+                    ],
+                }),
+            });
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            const json = yield res.json();
+            const fullContent = (_b = (_a = json.message) === null || _a === void 0 ? void 0 : _a.content) !== null && _b !== void 0 ? _b : "";
+            // Only return content after </think>
+            const answerAfterThink = (_c = fullContent.split("</think>").pop()) === null || _c === void 0 ? void 0 : _c.trim();
+            return answerAfterThink || fullContent || "No valid response received.";
+        }
+        catch (error) {
+            console.error("Error details:", error);
+            return `❌ Failed to connect to Ollama server: ${error.message}`;
+        }
     });
-
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-
-    const json = await res.json();
-    const fullContent = json.message?.content ?? "";
-
-    // Only return content after </think>
-    const answerAfterThink = fullContent.split("</think>").pop()?.trim();
-    return answerAfterThink || fullContent || "No valid response received.";
-  } catch (error) {
-    console.error("Error details:", error);
-    return `❌ Failed to connect to Ollama server: ${error.message}`;
-  }
 }
-
-// queryFromServer("pradheep", "tell about your ml journey").then((response) => {
-//   console.log("Response from Ollama:", response);
-// });
+queryFromServer("pradheep", "tell about your ml journey").then((response) => {
+    console.log("Response from Ollama:", response);
+});

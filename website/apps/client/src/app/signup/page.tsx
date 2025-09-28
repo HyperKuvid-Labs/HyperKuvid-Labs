@@ -1,5 +1,7 @@
 "use client"
 
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,10 +16,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import Link from "next/link"
-import { useState } from "react"
 import { z } from "zod"
+import { authAPI, storeAuthData } from "@/lib/api"
 
-// Zod validation schema
 const signupSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
@@ -35,6 +36,7 @@ const signupSchema = z.object({
 })
 
 export default function SignupPage() {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -45,43 +47,68 @@ export default function SignupPage() {
   const [showAlert, setShowAlert] = useState(false)
   const [alertMessage, setAlertMessage] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [submitting, setSubmitting] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
-    // Clear error for this field when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }))
-    }
+    if (errors[field]) setErrors(prev => ({ ...prev, [field]: "" }))
+    if (apiError) setApiError(null)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+    // Aligning with requested pattern: reset error + set loading
+    setApiError(null)
+    setErrors({})
+    setSubmitting(true)
+
     try {
-      // Validate form data with Zod
-      signupSchema.parse(formData)
-      
-      // Clear any previous errors
-      setErrors({})
-      
-      // Continue with form submission
-      console.log("Form submitted successfully", formData)
-      
-    } catch (error) {
+      // Parse & trim using schema (will throw if invalid)
+      const parsed = signupSchema.parse({
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+        confirmPassword: formData.confirmPassword
+      })
+
+      // Combine first + last name
+      const signupData = {
+        name: `${parsed.firstName} ${parsed.lastName}`,
+        email: parsed.email,
+        password: parsed.password
+      }
+
+      const { data } = await authAPI.signup(signupData)
+
+      if (data?.token) {
+        storeAuthData(data.token, data.user || { name: signupData.name, email: signupData.email })
+      }
+
+      setAlertMessage("Account created successfully. Redirecting to login...")
+      setShowAlert(true)
+      setTimeout(() => {
+        router.push("/login")
+      }, 1400)  
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {}
-        error.issues.forEach((err) => {
-          if (err.path[0]) {
-            fieldErrors[err.path[0] as string] = err.message
-          }
+        error.issues.forEach(issue => {
+          if (issue.path[0]) fieldErrors[issue.path[0] as string] = issue.message
         })
         setErrors(fieldErrors)
-        
-        // Show alert for the first error
-        const firstError = error.issues[0]
-        setAlertMessage(firstError.message)
+        setAlertMessage(error.issues[0]?.message || "Validation failed")
+        setShowAlert(true)
+      } else {
+        console.error("API Error:", error)
+        const message = error?.response?.data?.message || "Signup failed"
+        setApiError(message)
+        setAlertMessage(message)
         setShowAlert(true)
       }
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -120,7 +147,7 @@ export default function SignupPage() {
                       Add your projects, get approved and become a builder
                     </p>
                   </div>
-                  
+
                   <div className="flex gap-3">
                     <div className="grid gap-3 flex-1">
                       <Label htmlFor="builder-firstname" className="text-white">First Name</Label>
@@ -157,7 +184,7 @@ export default function SignupPage() {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="grid gap-3">
                     <Label htmlFor="builder-email" className="text-white">Email</Label>
                     <Input
@@ -175,7 +202,7 @@ export default function SignupPage() {
                       <p className="text-red-400 text-sm">{errors.email}</p>
                     )}
                   </div>
-                  
+
                   <div className="grid gap-3">
                     <Label htmlFor="builder-password" className="text-white">Password</Label>
                     <Input 
@@ -196,7 +223,7 @@ export default function SignupPage() {
                       Password must be at least 8 characters with uppercase, lowercase, number, and special character
                     </p>
                   </div>
-                  
+
                   <div className="grid gap-3">
                     <Label htmlFor="builder-confirm-password" className="text-white">Confirm Password</Label>
                     <Input 
@@ -214,11 +241,17 @@ export default function SignupPage() {
                       <p className="text-red-400 text-sm">{errors.confirmPassword}</p>
                     )}
                   </div>
-                  
-                  <Button type="submit" className="w-full bg-[#A855F7] hover:bg-[#9333EA] text-white transition-colors">
-                    Create Builder Account
+
+                  {apiError && <p className="text-sm text-red-400">{apiError}</p>}
+
+                  <Button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full bg-[#A855F7] hover:bg-[#9333EA] text-white transition-colors disabled:opacity-60"
+                  >
+                    {submitting ? "Creating..." : "Create Builder Account"}
                   </Button>
-                  
+
                   <div className="text-center text-sm text-gray-400">
                     Already have an account?{" "}
                     <Link href="/login" className="underline underline-offset-4 text-[#A855F7] hover:text-[#9333EA]">
@@ -236,7 +269,9 @@ export default function SignupPage() {
       <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
         <AlertDialogContent className="bg-[#0F0F0F] border border-[#333333]">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Validation Error</AlertDialogTitle>
+            <AlertDialogTitle className="text-white">
+              {apiError ? "Signup Status" : "Info"}
+            </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-400">
               {alertMessage}
             </AlertDialogDescription>
@@ -246,7 +281,7 @@ export default function SignupPage() {
               onClick={() => setShowAlert(false)}
               className="bg-[#A855F7] hover:bg-[#9333EA] text-white"
             >
-              Fix Errors
+              OK
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

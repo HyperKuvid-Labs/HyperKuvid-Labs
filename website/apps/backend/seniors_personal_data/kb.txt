@@ -1,0 +1,130 @@
+1. PERSONAL DATA
+----------------
+Name: Harish KB
+Email: harishkb20205@gmail.com
+Portfolio: https://harish-kb.web.app/
+GitHub: https://github.com/HARISH20205
+LinkedIn: https://www.linkedin.com/in/harish-kb-9417ba252/
+X: https://x.com/harish20205
+
+2. SKILLS
+---------
+Languages: Python, C/C++, JavaScript, TypeScript, Java, Go
+AI / ML & DL: PyTorch, Transformers, LLMs (fine-tuning, inference optimization, quantization), NLP, Computer Vision (YOLO, OpenCV), Scikit-learn
+LLM Systems & Inference: vLLM, SGLang, Ollama, Eagle, ONNX, Model Context Protocol (MCP)
+Web Development: React.js, Tailwind CSS, FastAPI, Django, Flask, Express.js
+Databases & Backend: PostgreSQL, MongoDB, Firebase, Prisma
+DevOps & Cloud: Docker, NGINX, AWS (EC2, S3), Nosana, Hugging Face Spaces, Vercel, Git, CI/CD
+Systems & Robotics: Linux, ROS2, Bash, CMake, Raspberry Pi
+
+3. LEARNING TIMELINE
+--------------------
+- In my 12th grade, i Got Interest in PC Building and understanding how computers work, I started Learning Python First by building small scripts and automating tasks.
+- In my first year of college, I Explored Various Domains in the CS Field, Started Exploring domains like Web Development, AI/ML, CyberSecurity, and Robotics. Attended a Hackathon To Build a Emotional Chatbot But Lacked Experience in AI/ML so couldn't proceed further but it sparked my curiosity in AI/ML.
+- In my Second year, i had a keen Interest in AI/ML, So Started Exploring various ML/DL concepts, Started with basic ML algorithms, then moved deeper into data science and CNNs. Developing end to end ML Pipelines from Data Collection to Model Deployment.
+- In my Second year break, I interned At a eBramha Techworks Startup Where I First Studying Paper "Attention is All You Need" and more on Speech Recognition Systems, after reading about 30 Papers, i Developed a Pipeline of Speech Recognition and Summarizer System, Since i couldn't Train one OF My Own due to lack of resources.
+So i used Pretrained Models like Whisper for Speech Recognition and Pegasus for Summarization.
+- In my Third year, I Started Exploring on Ai on Resouce constrained systems, and built FrugalSOT, An Adaptive LLM Routing System that routes Prompts to different LLMs based on prompt complexity, Reducing Inference time by 30-40% on Resource Constrained Hardware.
+- Parallelly, I Joined Team Avatar, A Humanoid Robotics Team, where i worked on Depth Estimation, Conversational Ai, and AI Ethics for our Humanoid Robot.
+- Later, Built PHYDRA for ISRO ISS Hackathon, An ISS Cargo Stowage System that optimizes the packing of cargo in the ISS using 3D Bin Packing and Pathfinding Algorithms, Built using C++ and FastAPI for backend logic. Lost the final round due to Prisma env misconfiguration by judges,
+- Internship at Titan: Built a scalable, production-ready AI pipeline that generates model-ready fashion visuals from a single dress image in minutes, replacing a 15-day photoshoot and editing workflow, saving costs worth crores, and integrated n8n-based automations for internal tooling and workflows.
+- Internship at Hooman Digital: Worked on Inferia, a privacy-focused, inference-on-demand AI system that allows users to deploy, manage, and scale AI models on Nosana. Built the complete backend architecture and developed Inferia ChatHub, a unified AI chatbot platform (similar to OpenRouter) providing a single API and chat interface for multiple selectable AI models.
+- Now Building HyperKuvid-Labs and Exploring more on LLM Systems, Inference Optimization, and Building Scalable AI Systems
+
+4. MAJOR PROJECTS
+-----------------
+1. Inferia ChatHub – Unified AI Inference Platform
+	- Tools: Python, Docker, SGLang, Nosana, GPU Orchestration
+	- Scalable LLM deployment with rate limiting, on-demand scaling, optimized GPU scheduling
+	- 30% latency reduction, 45% faster boot-up, 40% higher token throughput
+
+2. SpecQuant – Adaptive Speculative Decoding Framework
+	- Tools: Python, Multi-parent Quantization (FP16, Q8, Q4), Speculative Decoding
+	- Complexity-based prompt classification, draft-target token verification, hardware-aware execution
+	- 22.6% faster inference on consumer hardware, <2% accuracy loss
+
+3. Nosana MCP – Decentralized GPU Orchestration Gateway
+	- Tools: TypeScript, Model Context Protocol (MCP), Nosana Compute
+	- Unified gateway for AI assistants, containerized LLM/notebook job deployment, real-time GPU analytics
+	- 40% faster job execution, 25% higher cost-efficiency
+
+4. PHYDRA – ISS Cargo Stowage System
+	- Tools: C++, FastAPI, ReactJS, Python, Prisma, Docker
+	- 3D bin-packing, ACO/A*/Dijkstra pathfinding, subprocess orchestration
+	- 95% faster computation, handles 10M+ items in <5 seconds
+
+5. FrugalSOT – Adaptive LLM Routing System
+	- Tools: Ollama, Shell, Raspberry Pi 5, ReactJS
+	- Context-aware prompt complexity filter, model tier routing, dynamic cosine similarity threshold
+	- 70% inference time reduction on constrained hardware
+
+6. Titan Fashion AI Pipeline – Model-Ready Visual Generation
+	- Tools: Python, FastAPI, n8n, AI/ML Models
+	- End-to-end pipeline from single dress image to model-ready visuals, workflow automation
+	- Replaced 15-day photoshoot cycle, cost savings in crores
+
+5. PROJECTS TIMELINE
+---------------------
+- First year: Hackathon - Emotional Pet
+- Second Year: Speech Recognition and Summarization System, Resume-ATS
+- Third year: FrugalSOT, PHYDRA, Team Avatar Humanoid Robot
+- Third year-end: Titan Internship, HyperKuvid-Labs, AlphaHorizon
+- Fourth year: Hooman Digital Internship, Inferia ChatHub, SpecQuant, Nosana MCP
+
+6. EXPERIENCE
+-------------
+- AI Engineer Intern - Hooman Digital (Aug 2025 – Oct 2025)
+- AI Systems Intern - Titan (Jun 2025 – Jul 2025)
+- AI Research and Development Intern - eBramha Techworks(Jun 2024 – Sep 2024)
+
+7. EXPERIENCE TIMELINE
+-----------------------
+- Jun 2024 – Sep 2024: eBramha Techworks (AI Research)
+- May 2025 – Jul 2025: Titan Co. Ltd. (AI Systems+ Backend)
+- Aug 2025 – Oct 2025: Hooman Digital (AI Inference + Full Stack)
+
+8. COMPUTER SCIENCE KNOWLEDGE
+------------------------------
+
+System Design: monolith, microservices, modular systems, event-driven patterns
+
+Algorithms: arrays, trees, graphs, dynamic programming, bit manipulation, pathfinding, segment trees
+
+OS & Networking: processes, threads, memory management, scheduling, HTTP, REST, client–server
+
+Databases & Distributed Systems: indexing, normalization, transactions, ACID, scalability, load balancing, fault tolerance, P2P systems
+
+Machine Learning & AI: training vs inference, overfitting, evaluation, embeddings, tokenization, LLM inference pipelines, model quantization
+
+Parallel & Hardware-Aware Computing: CPU vs GPU, latency vs throughput, latency-aware compute pipelines
+
+DevOps & Deployment: Git, CI/CD, Docker, edge deployment
+
+
+9. FUTURE INTERESTS and GOALS
+--------------------------------
+- Build HyperKuvid Labs into a full-scale student-led R&D space
+- Deepen expertise in LLM systems, inference optimization, and scalable AI architectures
+- Contribute to open-source AI projects and research papers on efficient AI systems
+- Develop Go-based microservices and AI pipelines
+- Explore GPU programming and CUDA optimizations for AI workloads
+
+10. APART FROM DEV LIFE
+------------------------
+- PC Gaming Enthusiast — Big Fan of RPG and Storyline Games. Games like God of War, GTA, Prince of Persia, and Souls Games.
+
+- Aiming on Building a PC Gaming Rig Someday — Been Researching Builds and Should Probably Start Saving Up for a Beast Setup.
+
+- Exploring Indie Games and Game Development — Fascinated by How Small Teams Create Immersive Experiences with Limited Resources.
+
+- Love Playing Badminton and Chess — Helps Me Get Out of My Room.
+
+- Nerding Out on Random Topics and Lores — From Game Lore to Astronomy and Space Science.
+
+- Music Lover — Juice WRLD Fan (999).
+
+- Foodie — Love Trying Out New Cuisines and Recipes.
+
+- Strong Believer in Learning by Doing — Chaos Over Courses. Experience Over Exams.
+
+- Messed Up Sleep Cycle — Night Owl by Nature.

@@ -5,6 +5,7 @@ Email: pradheep.raop@gmail.com
 Portfolio: https://pradheepraop.vercel.app/  
 GitHub: https://github.com/Mantissagithub  
 LinkedIn: https://www.linkedin.com/in/pradheepraop/  
+X: https://x.com/pradheepraop
 
 
 2. SKILLS
@@ -66,7 +67,7 @@ Languages: Python, C++, C, Java, JavaScript, TypeScript, Rust, Dart, Solidity
 - First year break: MERN Stack, CI/CD, Docker  
 - Second year: Emotion Recognition System, eBramha internship  
 - Third year: FrugalSOT, PHYDRA, Rover Stack  
-- Third year-end: Titan Internship, HyperKuvid Labs  
+- Third year-end: Titan Internship, HyperKuvid-Labs  
 
 6. EXPERIENCE
 --------------
